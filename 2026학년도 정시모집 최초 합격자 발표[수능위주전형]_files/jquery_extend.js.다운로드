@@ -1,0 +1,4335 @@
+var formlink = {};
+//var REMOTE_ADDR = getRemoteAddr();
+//var debug = false;
+var __tempUniqueId__ = 0;
+var __SEP__ = '|';
+var tmDelayedMsg = new Array();
+var script = {
+	'session':{'php':'/trs/api/script.session.php'}
+	,'sms':{'php':'/trs/api/script.sms.php'}
+	,'base64encode':{'php':'/applyBase64.php'}
+	,'remoteaddr':{'php':'/api/applyRemoteAddr.php'}
+	,'cert':{'php':'/script/public/index.php'}
+};
+
+if( document.documentMode && document.documentMode<6 )
+{
+	alert('오래된 버젼의 인터넷 익스플로러를 사용할때는 본 사이트에서 일부 기능이 정상적으로 실행되지 않을 수 있습니다.'+document.documentMode);
+}
+
+
+$(function()
+{
+	if( $('img[on]').length>0 ) $('img[on]').imgon();
+
+	preload('/image/common/error.swf');
+
+	// 빈 셀 채우기
+	if( $('td:empty').length>0 ) $('td:empty').html('&nbsp;');
+
+	$('div.middle').each(function()
+	{
+		$(this).css({'top':Number($(this).parent().height()-$(this).outerHeight())/2});
+	});
+	$('div.bottom').each(function()
+	{
+		$(this).css({'top':Number($(this).parent().height()-$(this).outerHeight())});
+	});
+
+	$('img.middle').each(function()
+	{
+		$(this).load(function()
+		{
+			$(this).css({'top':Number($(this).parent().height()-$(this).outerHeight())/2});
+		});
+	});
+	$('img.bottom').each(function()
+	{
+		$(this).load(function()
+		{
+			$(this).css({'top':Number($(this).parent().height()-$(this).outerHeight())});
+		});
+	});
+
+	$('div.heightfix.fields').each(function()
+	{
+		var thisHeight = 0;
+		$(this).children('div.heightfix.region').each(function()
+		{
+			if( thisHeight<$(this).outerHeight() )
+			{
+				thisHeight = $(this).outerHeight();
+			}
+		});
+		$(this).children('div.heightfix.region').outerHeight(thisHeight);
+	});
+	$(window).resize(function(){
+		$('div.heightfix.fields').each(function()
+		{
+			var thisHeight = 0;
+			$(this).children('div.heightfix.region').each(function()
+			{
+				if( thisHeight<$(this).outerHeight() )
+				{
+					thisHeight = $(this).outerHeight();
+				}
+			});
+			$(this).children('div.heightfix.region').outerHeight(thisHeight);
+		});
+	});
+
+	$(document)
+		// focus, blur 이벤트 등록
+		// .delegate(':text,:password,textarea','focus',function()
+		// {
+		// 	if( $(this).is("[readOnly]") ) ($('body')||$(window)).focus();
+		// 	else
+		// 	{
+		// 		try{ $(this).addHighlight(); }
+		// 		catch (err){}
+		// 	}
+		// })
+		// .delegate(':text,:password,textarea','blur',function()
+		// {
+		// 	try
+		// 	{
+		// 		$(this).removeHighlight();
+		// 	}
+		// 	catch (err)
+		// 	{
+		// 	}
+		// })
+		//	enter event 등록
+		.delegate('input[enterevent]','keyup',function(evt)
+		{
+			try{ if( evt.keyCode==13 ) eval($(this).attr('enterevent')); }
+			catch(err){}
+		})
+		// 한글우선 셋팅
+		.delegate(':text.han,:text.HAN','focus',function()
+		{
+			if( $(this).css('ime-mode')!=null ) $(this).css({'ime-mode':'active','background-image':'none'});
+		})
+		// 영문만 입력 셋팅
+		.delegate(':text.eng,:text.ENG','focus',function()
+		{
+			if( $(this).css('ime-mode')!=null ) $(this).css({'ime-mode':'disabled','background-image':'none'});
+		})
+		// 대문자 자동 변환
+		.delegate(':text.upper,:text.UPPER','blur',function()
+		{
+			$(this).val(String($(this).val()||'').toUpperCase());
+		})
+		// 첫글자만 대문자 자동변환
+		.delegate(':text.cupper,:text.CUPPER','blur',function()
+		{
+			$(this).val(String($(this).val()||'').substr(0,1).toUpperCase() + String($(this).val()||'').substr(1));
+		})
+		// 소문자 자동변환
+		.delegate(':text.lower,:text.LOWER','blur',function()
+		{
+			$(this).val(String($(this).val()||'').toLowerCase());
+		})
+		// 첫글자만 소문자 자동변환
+		.delegate(':text.clower,:text.CLOWER','blur',function()
+		{
+			$(this).val(String($(this).val()||'').substr(0,1).toLowerCase() + String($(this).val()||'').substr(1));
+		})
+		// 숫자만 입력가능
+		.delegate(':text.number,:text.NUMBER','blur',function()
+		{
+			var $thisval = String($(this).val()||'');
+			if( $thisval!='' && !$thisval.match(/^([0-9]+(\.[0-9]+)?)$/) )
+			{
+				alert('올바른 숫자 형식으로 입력해야 합니다.');
+				$(this).val('');
+			}
+		})
+		// 정수만 입력가능
+		.delegate(':text.int,:text.INT','blur',function()
+		{
+			var $thisval = String($(this).val()||'');
+			if( $thisval!='' && !$thisval.match(/^([0-9]+)$/) )
+			{
+				alert('올바른 정수 형식으로 입력해야 합니다.');
+				$(this).val('');
+			}
+		})
+		//	입력글자 앞뒤 공백 없애기
+		.delegate('.plain,.PLAIN','blur',function()
+		{
+			$(this).val(String($(this).val()||'').trim());
+		})
+		//	컨트롤키 사용금지
+		.delegate('*[control]','keydown',function(evt)
+		{
+			if( String($(this).attr('control')).toLowerCase()=='off' && evt.keyCode=='17' )
+			{
+				evt.returnValue = null;
+				$(this).blur();
+				alert('컨트롤 키는 사용할 수 없습니다.');
+				return false;
+			}
+		})
+		//	쉬프트키 사용금지
+		.delegate('*[shift]','keydown',function(evt)
+		{
+			if( String($(this).attr('shift')).toLowerCase()=='off' && evt.keyCode=='16' )
+			{
+				evt.returnValue = null;
+				$(this).blur();
+				alert('쉬프트 키는 사용할 수 없습니다.');
+				return false;
+			}
+		})
+		//	오른쪽 마우스 사용금지
+		.delegate('*[contextmenu]','contextmenu',function(evt)
+		{
+			if( String($(this).attr('control')).toLowerCase()=='off' )
+			{
+				evt.returnValue = null;
+				$(this).blur();
+				alert('마우스 오른쪽버튼은 사용할 수 없습니다.');
+				return false;
+			}
+		});
+
+
+	//	버튼효과
+	try
+	{
+		$('input.smallbutton').smallbutton();
+	}
+	catch (err)
+	{
+	}
+
+	try
+	{
+		$('input.button').button();
+	}
+	catch (err)
+	{
+	}
+
+	try
+	{
+		$('input.button100').button100();
+	}
+	catch (err)
+	{
+	}
+
+	try
+	{
+		$('.w100').width100();
+	}
+	catch (err)
+	{
+	}
+
+	try
+	{
+		$('.tooltip').tooltip({tooltipClass:'tooltipClass', track:true, show:10, hide:10});
+	}
+	catch (err)
+	{
+	}
+
+
+	// IE 백그라운드 이미지 캐쉬처리하기
+	try{ document.execCommand('BackgroundImageCache', false, true); }catch(err){}
+
+//	$('table[class]').find('>tbody').find('>tr').find('>td').css('border-bottom','solid 1px #d5d5d5');
+	// $('table[class]').each(function(){
+	// 	if( !$(this).hasClass('nomalTable') && !$(this).hasClass('__se_tbl_ext') && !$(this).hasClass('__se_tbl') )
+	// 	{
+	// 		$(this).find('>tbody').find('>tr').find('>td').css('border-bottom','solid 1px #d5d5d5');
+	// 	}
+	// });
+
+
+//	$('table.applybox').css('table-layout','fixed');
+	// $('table.applybox > tbody').find('>tr').find('>td').css({'border-left':'solid 1px #b0b0b0','padding':'6px 3px'});
+	// $('table.applybox > tbody').find('>tr').find('>td:first').width(160).css({'padding-left':'15px','border-left':'0'});
+
+	// $('table.applybox2 > tbody').find('>tr').find('>td').css({'border-left':'solid 1px #b0b0b0','padding':'3px'});
+	// $('table.applybox2 > tbody').find('>tr').find('>td:first').css({'border-left':'0'});
+
+	// $('table.defaultbox > tbody').find('>tr').find('>td').css({'border-left':'solid 1px #b0b0b0','padding':'6px 3px'});
+	// $('table.defaultbox > tbody').find('>tr').find('>td:first').css({'border-left':'0'});
+
+	// $('table.simplebox > tbody').find('>tr').find('>td').css({'border-bottom':'solid 1px #ccc'});
+	// $('table.simplebox > tbody').find('>tr:first').find('>td').css({'background-color':'#efefef'
+	// 													, 'font-weight':'bold'
+	// 													, 'border-bottom':'solid 1px #ccc'
+	// 													, 'text-align':'center'
+	// 												});
+
+	// $('table.simplebox1 > tbody').find('>tr:first').find('>td').css({'background-color':'#ffffff'
+	// 													, 'font-weight':'bold'
+	// 													, 'border-bottom':'solid 1px #ddd'
+	// 													, 'text-align':'center'
+	// 												});
+
+	$('table.titlebox > tbody > tr').find('>td:first').css({'font-weight':'bold'
+														,'background-color':'#eee'
+														,'width':'90px'
+														,'text-align':'right'
+													});
+
+	$('table.noborder > tbody').find('>tr >td').css({'border-top':'0','border-right':'0','border-bottom':'0','border-left':'0'});
+	$('table.controlbox > tbody').find('>tr >td').css({'border-top':'0','border-right':'0','border-bottom':'0','border-left':'0'});
+	$('td.noborder').css({'border-top':'0','border-right':'0','border-bottom':'0','border-left':'0'});
+	$('td.controlbox').css({'border-top':'0','border-right':'0','border-bottom':'0','border-left':'0'});
+
+	$('table.bb2 > tbody, table.bottom2border > tbody').find('>tr:last td').css('border-bottom','solid 3px #333333');
+	$('table.bottom5border').css('border-bottom','solid 5px gray');
+	$('table.bb0 > tbody, table.bottom0border > tbody').find('>tr:last').find('>td').css('border-bottom','none');
+	$('table.lightgray5border').find('>tbody').find('>tr:last').find('>td').css('border-bottom','none');
+
+	$('.nomargin').css('margin','0');
+	$('.nomargin').parent().css('padding','0');
+
+	//	table, div 시작/끝 구분 넣기
+	$('.fields').find('>.region:last').addClass('region-last');
+	$('table:not(.parsedTable)').find('tr >th:last').addClass('th-last');
+	$('table:not(.parsedTable)').find('tr >th:first').addClass('th-first');
+	$('table:not(.parsedTable)').find('tr >td:last').addClass('td-last');
+	$('table:not(.parsedTable)').find('tr >td:first').addClass('td-first');
+
+	/**/
+//	$('table[class]').each(function(){
+//		if( !$(this).hasClass('nomalTable') )
+//		{
+//			$(this).find('.th-last, .td-last').css('border-right', 'none');
+//			$(this).find('.th-first, .td-first').css('border-left', 'none');
+//		}
+//	});
+	/**/
+
+	// 접수 작성 페이지에서 사용하는 자동 셋팅 함수들
+	if( $('#FlowDocument').length>0 )
+	{
+		needSpanRegionFix();
+	}
+	set100widthFix();
+	setAutoLayout();
+	setAutoLayout2();
+	setAutoLayout3();
+	$('*[display="none"], .hidden').hide();
+
+	// UI처리 등록
+	/**
+	<div class="tabs">
+		<ul>
+			<li><a href="#tabs-1">Nunc tincidunt</a></li>
+			<li><a href="#tabs-2">Proin dolor</a></li>
+			<li><a href="#tabs-3">Aenean lacinia</a></li>
+		</ul>
+		<div id="tabs-1">
+			<p>P tincidunt interdum. Phasellus ipsum. Nunc tristique tempus lectus.</p>
+		</div>
+		<div id="tabs-2">
+			<p>M consectetur tortor et purus.</p>
+		</div>
+		<div id="tabs-3">
+			<p>Msent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
+			<p>De lectus hendrerit hendrerit.</p>
+		</div>
+	</div>
+	 */
+	if( $('.tabs, .TABS').length )
+	{
+		$('.tabs, .TABS').tabs({
+			load:function(evt, ui)
+			{
+				//	ajax처리된 패널은 한번 로딩이 되면 다시 가져오지 않도록 처리
+				$(ui.tab).prop('href', '#'+$(ui.panel).prop('id'));
+			}
+		});
+	}
+	if( $('.accord, .ACCORD').length ) $('.accord, .ACCORD').accordion({ autoHeight:false, active:false, animated:false, collapsible:true });
+
+	// 테이블 이펙트
+	$('table.contents').tableRowEffect();
+	tableSortable('table.sortable');
+	$('table:not([cellspacing])').attr('cellspacing', '0');
+	$('table:not([cellpadding])').attr('cellpadding', '0');
+	$('table.nowrap').each(function()
+	{
+		$(this).tableWrap();
+	});
+
+	/**
+	 * 자동링크생성
+	 */
+	$('.autolink').autolink();
+	/**/
+
+	$('*[maxwidth]').cutLengthByWidth();
+
+	if( window.onloadPRC )
+	{
+		onloadPRC();
+		window.onloadPRC = null;
+	}
+	if( window.onunloadPRC )
+	{
+		$(window).bind('beforeunload',onunloadPRC);
+		/**
+		function onunloadPRC()
+		{
+			return 'aaaa?';
+		}
+		/**/
+	}
+
+});	//	end of $(function()
+
+jQuery.fn.extend({
+	/* 테이블 로우 마우스오버 효과 */
+	/* tr에 noeffect라는 클래스가 있으면 해당 로우는 처리하지 않는다. */
+	tableRowEffect:function()
+	{
+		$(this).each(function()
+		{
+			if( $(this).hasClass('noeffect') ) { return; }
+			$(this).find('tbody tr').each(function()
+			{
+				if( !$(this).hasClass('noeffect') )
+				{
+					$(this).hover(function()
+					{
+						$(this).children().each(function()
+						{
+							if( $(this).attr('rowspan') > 1 ) return;
+							$(this).addClass('contents_hover');
+						});
+					}, function()
+					{
+						$(this).children().each(function()
+						{
+							$(this).removeClass('contents_hover');
+						});
+					});
+				}
+			});
+		});
+	},	//	end of tableRowEffect:function()
+	floating:function(initLeft,topheight)
+	{
+		var $obj = $(this);
+		var topheight = topheight||0;
+		var initLeft = initLeft||0;
+
+		$obj.css("position",'absolute');
+		$obj.css("left",initLeft);
+
+		$(window).scroll(function(evt)
+		{
+			var scrolltop = $(evt.srcElement||evt.target).scrollTop();
+			if( scrolltop<topheight )
+			{
+				scrolltop = topheight;
+			}
+			$obj.css("top",scrolltop-topheight);
+		});
+	},	//	end of floating:function(initLeft,topheight)
+	smallbutton:function()
+	{
+		$(this).each(function()
+		{
+			var tagname = String($(this).attr('tagName')).toUpperCase();
+			if( $('html').hasClass('ie7') )
+			{
+				if( tagname=='INPUT' ) $(this).button().css({'line-height':'1','padding':'4px 4px 0 4px'});
+				else if( tagname=='BUTTON' ) $(this).button().find('span').css({'line-height':'1','padding':'4px 4px 0 4px'});
+			}
+			else
+			{
+				if( tagname=='INPUT' ) $(this).button().css({'line-height':'1','padding':'4px'});
+				else if( tagname=='BUTTON' ) $(this).button().find('span').css({'line-height':'1','padding':'4px'});
+			}
+		});
+		return this;
+	},	//	end of smallbutton:function()
+	button100:function()
+	{
+		$(this).each(function()
+		{
+			$(this).button().width100();
+		});
+		return this;
+	},	//	end of button100:function()
+	width100:function()
+	{
+		$(this).each(function()
+		{
+			$(this).addClass('w100').wrap('<div class="fields">').wrap('<div class="region size1of1" style="clear:both; overflow:hidden;">');
+		});
+		return this;
+	},	//	end of button100:function()
+	addHighlight:function()
+	{
+		$(this).addClass('highlight');
+	},	//	end of addHighlight:function()
+	removeHighlight:function()
+	{
+		$(this).removeClass('highlight');
+	},	//	end of removeHighlight:function()
+	imgon:function()
+	{
+		$(this).each(function()
+		{
+			var $src = $(this).attr('src');
+			var temp = $src.split('/');
+			temp.pop();
+			var $path = (temp||[]).join('/');
+			$(this).attr('on',$path+'/'+$(this).attr('on'));
+			$(this).attr('off',$src);
+			if( $(this).hasClass('imgon') )
+			{
+				$(this).attr('src',$(this).attr('on'));
+				$(this).attr('off',$(this).attr('on'));
+				$(this).parent().addClass('imgon');
+			}
+			else
+			{
+				$(this).hover(
+					function(evt)
+					{
+						$(this).attr('src',$(this).attr('on'));
+						$(this).parent().addClass('imgon');
+					}
+					,function(evt)
+					{
+						$(this).attr('src',$(this).attr('off'));
+						$(this).parent().removeClass('imgon');
+					}
+				);
+			}
+		});
+	},	//	end of imgon:function()
+	autolink:function()
+	{
+		$(this).each(function()
+		{
+			var contents = $(this).html();
+			if( contents!='' )
+			{
+				var linkmatchs = contents.match(/(https?:\/\/[^\s]+)/g);
+				var linksLength = linkmatchs.length;
+				for( var temp = 0; temp < linksLength; temp++ )
+				{
+					contents = contents.replace(linkmatchs[temp], '<a href="' + linkmatchs[temp] + '" target="_blank">' + linkmatchs[temp] + '</a>');
+				}
+				$(this).html(contents);
+			}
+		});
+	},	//	end of autolink:function()
+	microtime:function()
+	{
+		var now = new Date();
+		return String(now.getYear())+String(str_pad(now.getMonth()+1,2,'0','STR_PAD_LEFT'))+String(str_pad(now.getDate(),2,'0','STR_PAD_LEFT'))+String(str_pad(now.getHours(),2,'0','STR_PAD_LEFT'))+String(str_pad(now.getMinutes(),2,'0','STR_PAD_LEFT'))+String(str_pad(now.getSeconds(),2,'0','STR_PAD_LEFT'))+'.'+String(str_pad(now.getMilliseconds(),3,'0','STR_PAD_LEFT'));
+	},	//	end of microtime:function()
+	widthMatch:function(arg)
+	{
+		var debugTime = [];
+
+		if( typeof arg=='function' ) arg = {'notfix':false,'scrolls':false,'scroll':function(){},'input':false,'blur':arg,'row':'*','col':'*',trim:true};
+		else
+		{
+			if( arg==undefined ) arg = {};
+			if( arg.notfix==undefined ) arg.notfix = false;
+			if( arg.scrolls==undefined ) arg.scrolls = false;
+			if( arg.input==undefined ) arg.input = false;
+			if( arg.blur==undefined ) arg.blur = function(row,col,val,orival){};
+			if( arg.scroll==undefined ) arg.scroll = function(row,col,val,orival){};
+			if( arg.row==undefined ) arg.row = '*';
+			if( arg.col==undefined ) arg.col = '*';
+			if( arg.trim==undefined ) arg.trim = true;
+		}
+
+		debugTime[debugTime.length] = this.microtime();
+		//20120412114548.532
+		//0
+
+		var matchWidths = [];
+		this.tableWrap();
+		//_alert(this.find('td:not(".proceed")').length);
+		//2551
+		this.each(function()
+		{
+			$(this).find('td:not(".proceed")').css('padding','0').wrapInner('<div class="evtMatchDiv" style="margin:5px; WHITE-SPACE: nowrap;" nowrap></div>').addClass('proceed');
+
+			if( !$(this).parent().hasClass('widthMatchDiv') )
+			{
+				$(this).wrap('<div class="widthMatchDiv" id="widthMatchDiv_'+$(this).attr('id')+'" style="clear:left; position:relative; overflow:scroll;"></div>');
+			}
+			else
+			{
+				$(this).parent().css('overflow','scroll');
+			}
+
+			var temp = 0;
+			if( !$(this).is(arg.notfix) )
+			{
+				$(this).css('table-layout','').css('width','auto');
+				$(this).find('tr:first').find('td').each(function()
+				{
+					var $width = $(this).width();
+					if( !matchWidths[temp] || matchWidths[temp]<$width ) matchWidths[temp] = $width;
+					temp++;
+				});
+			}
+		});
+
+		debugTime[debugTime.length] = this.microtime();
+		//20120412114551.360
+		//2.83
+
+		var maxWidth = 0;
+		for(var temp=0; temp<matchWidths.length; temp++)
+		{
+			maxWidth = sum(maxWidth,matchWidths[temp]);
+		}
+
+		debugTime[debugTime.length] = this.microtime();
+		//20120412114551.844
+		//0.002
+
+		this.each(function()
+		{
+			if( !$(this).is(arg.notfix) )
+			{
+				$(this).css('table-layout','fixed').css('width',maxWidth);
+				for(var temp=0; temp<matchWidths.length; temp++)
+				{
+					$(this).find('tr').find('td:eq('+temp+')').width(matchWidths[temp]).attr('width',matchWidths[temp]);
+				}
+			}
+
+			if( $(this).is(arg.input) )
+			{
+				$(this).cellAppendInput(arg.row, arg.col, arg.trim, arg.blur);
+				//
+			}	//	end of if( $(this).is(arg.input) )
+		});
+
+		debugTime[debugTime.length] = this.microtime();
+		//20120412114552.796
+		//0.95
+
+		if( !this.proceed )
+		{
+			this.proceed = true;
+			this.scrollTable(arg.scrolls, arg.notfix, arg.scroll);
+		}
+		//_alert(debugTime);
+		return this;
+	},	//	end of widthMatch:function(arg)
+	cellAppendInput:function(row,col,trim,blur)
+	{
+		row = row||'*';
+		col = col||'*';
+		trim = trim||true;
+		blur = blur||function(){};
+
+		if( $(this).is('table') )
+		{
+			$(this).find('tr').each(function()
+			{
+				if( row=='*' || String($(this).index()).match(new RegExp('^('+row+')$')) )
+				{
+					$(this).find('td').each(function()
+					{
+						if( col=='*' || String($(this).index()).match(new RegExp('^('+col+')$')) )
+						{
+							if( $(this).find('.evtMatchDiv').text()=='' )
+							{
+								$(this).find('.evtMatchDiv').html('&nbsp;');
+							}
+							$(this).find('.evtMatchDiv').dblclick(function(evt)
+							{
+								var rowIndex = $(this).parent().parent().index();
+								var colIndex = $(this).parent().index();
+								var orival = $(this).html();
+								if( orival=='&nbsp;' ) orival = '';
+
+								$(this).html('<input type="text" value="'+orival+'" class="w100" />');
+								$(this).find('input').blur(function()
+								{
+									if( trim==true )
+									{
+										$(this).val($.trim($(this).val()));
+									}
+									var val = $(this).val();
+									blur.apply(this, [rowIndex, colIndex, val, orival]);
+									orival = val;
+								}).select();
+								$(this).unbind('dblclick');
+							});
+						}
+						else
+						{
+							$(this).css('background-color','lightgray');
+						}
+					});
+				}
+				else
+				{
+					$(this).find('td').css('background-color','lightgray');
+				}
+			});
+		}	//	end of if( $(this).is(arg.input) )
+		return this;
+	},	//	end of cellAppendInput:function(row,col,trim,blur)
+	scrollTable:function(scrolls,notfix,scrollfunc)
+	{
+		scrolls = scrolls||'';
+		notfix = notfix||'';
+		scrollfunc = scrollfunc||function(){};
+
+		var fixedDiv = [];
+		var scrollDiv = [];
+		var windowFitDiv = [];
+		var useHeight = 0;
+		var startOffset = $(window).height();
+
+		this.each(function()
+		{
+			if( !$(this).is(scrolls) )
+			{
+				if( !$(this).is(notfix) )
+				{
+					fixedDiv[fixedDiv.length] = '#widthMatchDiv_'+$(this).attr('id');
+				}
+				$('#widthMatchDiv_'+$(this).attr('id')).css('overflow','hidden');
+			}
+			else
+			{
+				scrollDiv[scrollDiv.length] = '#widthMatchDiv_'+$(this).attr('id');
+			}
+
+			var maxheight = String($(this).attr('maxheight')||'').toUpperCase();
+			if( !maxheight.match(/^(WINDOW)/) )
+			{
+				if( maxheight!='' )
+				{
+					$('#widthMatchDiv_'+$(this).attr('id')).height(Number(maxheight));
+				}
+				useHeight += Number($('#widthMatchDiv_'+$(this).attr('id')).height());
+				if( $('#widthMatchDiv_'+$(this).attr('id')).offset().top<startOffset ) startOffset = $('#widthMatchDiv_'+$(this).attr('id')).offset().top;
+			}
+			else
+			{
+				windowFitDiv[windowFitDiv.length] = $(this);
+			}
+		});
+
+		if( windowFitDiv.length>0 )
+		{
+			var paddingtop = Number(String($('body').css('padding-top')).replace('px',''));
+			var parsedHeight = paddingtop+startOffset+useHeight;
+			var winFitLength = windowFitDiv.length;
+			var heightAdds = [];
+
+			for( var temp=0; temp<winFitLength; temp++ )
+			{
+				var obj = windowFitDiv[temp];
+				var maxheight = String(obj.attr('maxheight')||'').toUpperCase();
+				var heightAdd = maxheight.match(/^(WINDOW)((\s*[-+]\s*)([0-9]+))?$/);
+				var heightSim = heightAdd[3]||'';
+				var heightNum = heightAdd[4]||0;
+				heightAdds[temp] = eval('0+'+heightSim+heightNum);
+				$('#widthMatchDiv_'+obj.attr('id')).height(parseInt(($(window).height()-parsedHeight)/winFitLength)+heightAdds[temp]);
+			}
+		}
+
+		if( scrollDiv.length>0 )
+		{
+			$(scrollDiv.join(',')).scroll(function(evt)
+			{
+				$(fixedDiv.join(',')).find('table').css('left',-$(evt.srcElement||evt.target).scrollLeft());
+				$(scrollDiv.join(',')).not('#'+$(evt.srcElement||evt.target).attr('id')).scrollLeft($(evt.srcElement||evt.target).scrollLeft());
+				scrollfunc(parseInt($(evt.srcElement||evt.target).height()), parseInt($(evt.srcElement||evt.target).attr('scrollHeight')), parseInt($(evt.srcElement||evt.target).scrollTop()));
+			});
+		}
+
+		this.proceed = true;
+		return this;
+	},	//	end of scrollTable:function(scrolls,notfix,scrollfunc)
+	tableWrap:function()
+	{
+		this.find('td').css('white-space', 'nowrap').attr('nowrap','true');
+		return this;
+	},	//	end of tableWrap:function()
+	selectConvert:function()
+	{
+		this.css('display','inline');
+		var tempid = 'selectConUlFor'+this.attr('name');
+		this.after('<ul class="selectConUl" id="'+tempid+'"></ul>');
+		var maxwidth = 0;
+		var select = this;
+		this.find('option').each(function(select)
+		{
+			var dis = $(this).get(0).disabled?'disabled':'';
+			var sel = $(this).get(0).selected?'selected':'';
+			var n = $('<li value="'+$(this).attr('value')+'" class="'+dis+' '+sel+'" '+dis+' '+sel+'>'+$(this).text()+'</li>');
+			$('#'+tempid).append(n);
+			if( n.width()>maxwidth )
+			{
+				maxwidth = n.width();
+			}
+			else
+			{
+				n.width(maxwidth);
+			}
+			n.click(function(evt)
+			{
+				evt.stopPropagation();
+				if( $(this).parent().hasClass('opened') )
+				{
+					if( $(this).hasClass('disabled') )
+					{
+						return false;
+					}
+					$(this).parent().find('li').removeClass('selected').removeAttr('selected');
+					$(this).addClass('selected').attr('selected','selected');
+					$(this).parent().removeClass('opened').find('li:not(.selected)').hide();
+					$('select[name='+$(this).parent().attr('id').replace('selectConUlFor','')+']').val($(this).attr('value')||'');
+				}
+				else
+				{
+					$(this).parent().addClass('opened').find('li').show().css('display','block');
+				}
+			}).disableSelection();
+
+		});
+		$('#'+tempid).after('<span id="span'+tempid+'" style="display:inline-block;">&nbsp;</span>');
+		var widthObj = $('#'+tempid+' li:eq(0)');
+		$('#span'+tempid).width(sum(widthObj.width(),widthObj.css('padding-left').replace('px',''),widthObj.css('padding-right').replace('px','')));
+		$('#'+tempid).removeClass('opened').find('li:not(.selected)').hide();
+		$(document).click(function(evt)
+		{
+			$('.opened').removeClass('opened').find('li:not(.selected)').hide();
+		});
+		this.hide();
+		return $('#'+tempid);
+	},	//	end of selectConvert:function()
+//	tooltip:function(msg,fg,bg)
+//	{
+//		msg = msg || 'TOOLTIP';
+//		fg = fg || '#777777';
+//		bg = bg || '#FFFFFF';
+//		this.mouseover(function()
+//		{
+//			$('body').append('<div id="toolTipLayer" style="position:absolute; z-index:9999;"></div>');
+//			var contents = '<table border="0" cellspacing="0" cellpadding="1" bgcolor="' + fg + '" style="width:auto;"><tr><td><table border="0" cellspacing="0" cellpadding="1" bgcolor="' + bg + '"><tr><td align="center"><font face="sans-serif" color="' + fg + '" size="-1">&nbsp;' + msg + '&nbsp;</font></td></tr></table></td></tr></table>';
+//			$('#toolTipLayer').html(contents);
+//			$(document).mousemove(function(evt)
+//			{
+//				var x = evt.pageX + 10;
+//				var y = evt.pageY;
+//				if( $('#toolTipLayer').width() != 0 )
+//				{
+//					if( (x + $('#toolTipLayer').width()) > $(window).width() ) x = evt.pageX - $('#toolTipLayer').width();
+//				}
+//				if( $('#toolTipLayer').height() != 0 )
+//				{
+//					if( (y + $('#toolTipLayer').height()) > $(window).height() ) y = evt.pageY - $('#toolTipLayer').height();
+//				}
+//				$('#toolTipLayer').css('left', x).css('top', y);
+//			});
+//		});
+//		this.mouseout(function()
+//		{
+//			$('#toolTipLayer').remove();
+//		});
+//		return this;
+//	},	//	end of tooltip:function(msg,fg,bg)
+	formvalue : function(glue)
+	{
+		glue = glue || ',';
+		if( String($(this).prop('tagName'))=='INPUT' )
+		{
+			switch( $(this).prop('type').toUpperCase() )
+			{
+				case 'RADIO':
+					return $(this).filter(':checked').val()||'';
+					break;
+				case 'CHECKBOX':
+					var tempRes = [];
+					$(':checkbox[name="' + $(this).attr('name') + '"]').filter(':checked').each(function()
+					{
+						tempRes.push($(this).val());
+					});
+					if( tempRes.length==0) return '';
+					return tempRes.join(glue);
+					break;
+				case 'TEXT':
+				case 'HIDDEN':
+				case 'PASSWORD':
+				default:
+					return $(this).val()||'';
+					break;
+			}
+			return '';
+		}
+		else if( String($(this).prop('tagName'))=='SELECT' )
+		{
+			return this.find('option').filter(':selected').val()||'';
+		}
+		else
+		{
+			return $(this).val()||'';
+		}
+		return '';
+	},	//	end of formvalue : function(glue)
+	cutLengthByWidth:function()
+	{
+		return this.each(function()
+		{
+			if( !isNaN(Number($(this).attr('maxwidth'))) )
+			{
+				var $maxWidth = Number($(this).attr('maxwidth')) - 20;
+				$(this).css('white-space', 'nowrap').attr('nowrap','true');
+				if( $(this).width() > $maxWidth )
+				{
+					var oText = $(this).text();
+					var nText = oText.substring(0, oText.length - 1);
+					var HTML = $(this).html().replace(oText, nText.trim());
+					$(this).html(HTML);
+					if( $(this).width() <= $maxWidth )
+					{
+						var HTML = $(this).html().replace($(this).text(), $(this).text() + '..');
+						$(this).html(HTML);
+					}
+					else
+					{
+						$(this).cutLengthByWidth();
+					}
+				}
+			}
+		});
+	}	//	end of cutLengthByWidth:function()
+
+});	//	end of jQuery.fn.extend({
+
+function getFormValue(arg, arg1)
+{
+	try
+	{
+		arg = String(arg||'');
+		arg1 = arg1||',';
+		if( arg=='' ) return '';
+		return $('input[name="' + arg + '"],input[name="' + arg + '[]"],select[name="' + arg + '"]').formvalue(arg1);
+
+	}
+	catch (err)
+	{
+		_alert(err);
+	}
+}
+
+function enableRadioUnchecked()
+{
+	/***************************************************************************
+	 * 라디오버튼 다시 클릭하면 선택해제하기 등록 * $(":radio").live('mousedown',function(evt) {
+	 * if( !$(this).attr('checked') ) {
+	 * $(this).attr('prestatus',$(this).attr('checked'));
+	 * $('label[for="'+$(this).attr('id')+'"]').attr('prestatus',$(this).attr('prestatus')); }
+	 * }); $(":radio").live('click',function(evt) { if(
+	 * String($(this).attr('checked'))=='true' &&
+	 * String($(this).attr('prestatus'))=='true' )
+	 * $(this).attr('checked',false);
+	 * $(this).attr('prestatus',$(this).attr('checked')); var this_status =
+	 * $(this).attr('prestatus');
+	 * $('label[name="label_'+$(this).attr('name')+'"]').attr('prestatus','false');
+	 * $(':radio[name="'+$(this).attr('name')+'"]').attr('prestatus','false');
+	 * $('label[for="'+$(this).attr('id')+'"]').attr('prestatus',this_status);
+	 * $(this).attr('prestatus',this_status); $(this).blur(); }); /
+	 **************************************************************************/
+}
+
+function preload(arg)
+{
+	$('body').append($('<img src="' + arg + '" style="display:none; width:0; height:0;" />'));
+}
+
+function calendar(obj, startdate, enddate, endScript, $refObj)
+{
+	if( $(obj).attr('datepickered') != '1' )
+	{
+		var nowYear = $.datepicker.formatDate('yy', new Date());
+		if( startdate == undefined || startdate == '00000000' )
+		{
+			startdate = String(Number($.datepicker.formatDate('yy', new Date())) - 3) + '0101';
+		}
+		if( enddate == undefined || enddate == '00000000' )
+		{
+			enddate = String(Number($.datepicker.formatDate('yy', new Date())) + 1) + '1231';
+		}
+		$(obj).datepicker({
+			duration : 'fast',
+			showButtonPanel : false,
+			gotoCurrent : true,
+			changeYear : true,
+			changeMonth : true,
+			showMonthAfterYear : true,
+			dayNames : [ '일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일' ],
+			dayNamesMin : [ '일', '월', '화', '수', '목', '금', '토' ],
+			dayNamesShort : [ '일', '월', '화', '수', '목', '금', '토' ],
+			monthNames : [ '1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월' ],
+			monthNamesShort : [ '1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월' ],
+			nextText : '다음달',
+			prevText : '이전달',
+			currentText : '오늘',
+			closeText : '완료',
+			onClose : function(dateText, instance)
+			{
+				if( dateText ) $(this).removeClass('bgcalendar');
+				else $(this).addClass('bgcalendar');
+
+				endScript = endScript || '';
+				if( endScript != '' )
+				{
+					try
+					{
+						eval(endScript);
+					}
+					catch (err)
+					{
+						alert('calendar : '+err);
+					}
+				}
+			},
+			hideIfNoPrevNext : true, // 이 위는 변경하지 않는 사항
+			dateFormat : $(obj).attr('format') || 'yy/mm/dd',
+			yearRange : '1950:' + (Number(enddate.substr(0,4)) + 1),
+			minDate : new Date(String(startdate).substr(0, 4), String(startdate).substr(4, 2) - 1, String(startdate).substr(6, 2)),
+			maxDate : new Date(String(enddate).substr(0, 4), String(enddate).substr(4, 2) - 1, String(enddate).substr(6, 2))
+		});
+		if( $refObj )
+		{
+			$(obj).datepicker('option', 'beforeShow', function()
+			{
+				if( $refObj.val() )
+				{
+					$(obj).datepicker('option', 'defaultDate', $refObj.val());
+				}
+			});
+		}
+		$(obj).attr('datepickered', '1');
+		$(obj).trigger('focus');
+	}
+}
+
+function deleteCalendar(objName)
+{
+	$('input[name="'+objName+'DATE"]').val('');
+	$('input[name="'+objName+'YEAR"]').val('');
+	$('input[name="'+objName+'MONTH"]').val('');
+	$('input[name="'+objName+'DAY"]').val('');
+	$('input[name="'+objName+'_TEMPDATE"]').val('');
+	if( $('input[name="'+objName+'_TEMPDATE"]').hasClass('hasDatepicker') )
+	{
+		$('input[name="'+objName+'_TEMPDATE"]').removeClass('bgcalendar');
+		$('input[name="'+objName+'_TEMPDATE"]').addClass('bgcalendar');
+	}
+}
+
+/*******************************************************************************
+ * * function tableBodyScroll(obj) { $(obj).width($(window).width()-20);
+ * $(obj).find('thead').each(function() { $(this).css('position','relative');
+ * $(this).width($(window).width()-20).css('overflow','scroll'); });
+ * $(obj).find('tbody').each(function() { $(this).css('position','relative');
+ * $(this).width($(window).width()-20).css('overflow','scroll'); }); } /
+ ******************************************************************************/
+
+/**
+ * 테이블이 소팅이 가능한 상태로 만든다 thead, tbody가 필요 thead의 노드중 th,td에 nosort라는 클래스가 있으면 해당
+ * 셀라인은 소팅하지 않는다.
+ */
+function tableSortable(obj)
+{
+	$(obj).find('thead th').each(function()
+	{
+		if( !$(this).hasClass('nosort') )
+		{
+			$(this).append('<span class="ui-icon ui-icon-minus" style="display:inline-block !important;"></span>');
+			$(this).css('cursor', 'pointer').click(function()
+			{
+				tableSort(this);
+			});
+		}
+	});
+	$(obj).find('thead td').each(function()
+	{
+		if( !$(this).hasClass('nosort') )
+		{
+			$(this).append('<span class="ui-icon ui-icon-minus" style="display:inline-block !important;"></span>');
+			$(this).css('cursor', 'pointer').click(function()
+			{
+				tableSort(this);
+			});
+		}
+	});
+}
+/**/
+
+/**
+ * 테이블소팅 실제 동작함수
+ */
+function tableSort(obj)
+{
+	if( !obj ) return false;
+	var tab = $(obj).parent().parent().parent(); // event table
+	var groups = $(obj).parent().children(); // thead group
+	var index = null; // column index
+	for( var temp = 0; temp < groups.length; temp++ )
+	{
+		if( groups[temp] == obj )
+		{
+			index = temp;
+		}
+		else
+		{
+			$(groups[temp]).find('span.ui-icon').removeClass('ui-icon-triangle-1-s').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-minus');
+		}
+	}
+	if( index == null ) { return false; }
+
+	var sorttype = '';
+	if( $(obj).find('span.ui-icon').hasClass('ui-icon-triangle-1-n') )
+	{
+		$(obj).find('span.ui-icon').removeClass('ui-icon-triangle-1-n').addClass('ui-icon-triangle-1-s');
+		sorttype = 'desc';
+	}
+	else
+	{
+		$(obj).find('span.ui-icon').removeClass('ui-icon-triangle-1-s').removeClass('ui-icon-minus').addClass('ui-icon-triangle-1-n');
+		sorttype = 'asc';
+	}
+
+	var tbody = $(tab).find('tbody');
+	var rows = $(tbody).children('tr');
+	var cols = new Array();
+	var colsindex = new Array();
+	for( var temp = 0; temp < rows.length; temp++ )
+	{
+		cols[temp] = $(rows).eq(temp).children().eq(index).text();
+		colsindex[temp] = temp;
+	}
+
+	if( sorttype == 'desc' )
+	{
+		var res = desc(new Array(cols, colsindex));
+	}
+	else
+	{
+		var res = asc(new Array(cols, colsindex));
+	}
+
+	cols = res[0];
+	colsindex = res[1];
+
+	do
+	{
+		var html = (!html) ? $(tbody).html().replace('</tr>', '</TR>') : html.replace('</tr>', '</TR>');
+	}
+	while (html.match(/(<\/tr>)/));
+
+	var rowhtmls = html.split('</TR>');
+	var reshtml = '';
+	for( var temp = 0; temp < colsindex.length; temp++ )
+	{
+		reshtml += rowhtmls[colsindex[temp]] + '</TR>';
+	}
+	$(tbody).html(reshtml);
+	tab.tableRowEffect();
+	return true;
+}
+/**/
+
+/**
+ * 테이블 소팅에서 사용하는 내림차순 정렬 함수
+ */
+function desc(arr)
+{
+	var cols = arr[0];
+	var colsindex = arr[1];
+	for( var temp = cols.length; temp > 0; temp-- )
+	{
+		if( temp - 1 >= 0 )
+		{
+			for( var nowindex = temp - 1; nowindex > 0; nowindex-- )
+			{
+				var p1 = $.trim(cols[nowindex - 1]);
+				var p2 = $.trim(cols[temp - 1]);
+				if( String(Number(p1)) == String(p1) && String(Number(p2)) == String(p2) )
+				{
+					p1 = Number(p1);
+					p2 = Number(p2);
+				}
+
+				if( p1 < p2 )
+				{
+					var tempvar = cols[temp - 1];
+					cols[temp - 1] = cols[nowindex - 1];
+					cols[nowindex - 1] = tempvar;
+					var tempvar = colsindex[temp - 1];
+					colsindex[temp - 1] = colsindex[nowindex - 1];
+					colsindex[nowindex - 1] = tempvar;
+				}
+			}
+		}
+	}
+	return new Array(cols, colsindex);
+}
+/**/
+
+/**
+ * 테이블 소팅에서 사용하는 올림차순 정렬 함수
+ */
+function asc(arr)
+{
+	var cols = arr[0];
+	var colsindex = arr[1];
+	for( var temp = 0; temp < cols.length; temp++ )
+	{
+		if( temp + 1 < cols.length )
+		{
+			for( var nowindex = temp + 1; nowindex < cols.length; nowindex++ )
+			{
+				var p1 = $.trim(cols[nowindex]);
+				var p2 = $.trim(cols[temp]);
+				if( String(Number(p1)) == String(p1) && String(Number(p2)) == String(p2) )
+				{
+					p1 = Number(p1);
+					p2 = Number(p2);
+				}
+
+				if( p1 < p2 )
+				{
+					var tempvar = cols[temp];
+					cols[temp] = cols[nowindex];
+					cols[nowindex] = tempvar;
+					var tempvar = colsindex[temp];
+					colsindex[temp] = colsindex[nowindex];
+					colsindex[nowindex] = tempvar;
+				}
+			}
+		}
+	}
+	return new Array(cols, colsindex);
+}
+/**/
+
+/**
+ * $url : 호출할 파일 경로 예: './board/stick.php' $data : 문자열로 이루어진 데이터 예:
+ * 'stickid='+stickID $success : 성공시 호출될 함수 예: function(d) { $('#'+stickID+'
+ * ul').html(d); }
+ */
+function ajaxpost($url, $data, $success)
+{
+	return ajaxextend('POST', $url, $data, $success);
+}
+
+function ajaxget($url, $data, $success)
+{
+	return ajaxextend('GET', $url, $data, $success);
+}
+
+function ajaxextend($type, $url, $data, $success)
+{
+	return $.ajax({
+		type:$type,
+		url:$url,
+		data:$data,
+		async:true,
+		global:false,
+		success:$success,
+		error:function(arg, arg1, arg2)
+		{
+			if(arg.statusText=='abort') return;
+			alert('서버 통신에 실패했습니다!\n\n잠시후 다시 시도해주세요!');
+		}
+	});
+}
+
+function certAjax(juminno, userr, signeddata, hashdata, successFunction)
+{
+	$.ajax({
+		type : 'post',
+		url : script.cert.php,
+		data : {'idn':juminno,'userr':userr,'signeddata':signeddata,'hashdata':hashdata},
+		async:true,
+		global:false,
+		success : successFunction,
+		error : function(arg, arg1, arg2)
+		{
+			alert('서버 통신에 실패했습니다!\n\n잠시후 다시 시도해주세요!');
+		}
+	});
+}
+
+function ajaxpost1($url, $data, $success)
+{
+	ajaxextend1('POST', $url, $data, $success);
+}
+
+function ajaxget1($url, $data, $success)
+{
+	ajaxextend1('GET', $url, $data, $success);
+}
+
+function ajaxextend1($type, $url, $data, $success)
+{
+	try
+	{
+		$.ajax({
+			type : $type,
+			url : $url,
+			data : $data,
+			async:false,
+			global:false,
+			success : $success,
+			error : function(arg, arg1, arg2)
+			{
+				alert('서버 통신에 실패했습니다!\n\n잠시후 다시 시도해주세요!');
+			}
+		});
+	}
+	catch (err)
+	{
+		alert('ajaxextend : '+err.message);
+	}
+}
+
+function alarm(arg)
+{
+	var soundfile = '';
+	switch (arg)
+	{
+		case 'noti':
+			soundfile = 'error.swf';
+			break;
+		case 'welcome':
+			soundfile = 'visit.swf';
+			break;
+		case 'newmemo':
+			soundfile = 'memo_on.swf';
+			break;
+	}
+	if( soundfile != '' )
+	{
+		$('body').append($('<embed class="alarm" src="/image/common/' + soundfile + '" loop="false" style="display:inline; width:0; height:0; position:absolute;" />'));
+	}
+
+} // end of function alarm(arg)
+
+function debug(obj)
+{
+	for( var a in obj )
+	{
+		try
+		{
+			if( !obj[a].toString().match(/(function)/) ) _alert(a + ';\n' + obj[a]);
+		}
+		catch (err)
+		{
+		}
+	}
+}
+
+function scrollGradient(objid, type)
+{
+	if( !type ) type = 'white';
+	if( !!!objid )
+	{
+		$("#uppergradient,#lowergradient").remove();
+	}
+	else
+	{
+		// alert('scrollTop' + $("#"+objid).attr("scrollTop"));
+		if( $("#" + objid).attr("scrollTop") > 0 )
+		{
+			if( !$("#uppergradient").length )
+			{
+				$("#" + objid).append('<div id="uppergradient" style="background-image:url(/image/common/gradient_' + type + '_up.png);"><SPAN class="ui-icon ui-icon-arrowthickstop-1-n" onclick="scrolldiv(\'' + objid + '\',\'TOP\')"></SPAN><span onclick="scrolldiv(\'' + objid + '\',\'TOP\')">맨위로</span><span>&nbsp;</span><SPAN class="ui-icon ui-icon-arrowthick-1-n" onclick="scrolldiv(\'' + objid + '\',-40)"></SPAN><span onclick="scrolldiv(\'' + objid + '\',-40)">위로</span></div>');
+				$("#" + objid + " span").disableSelection();
+				$("#uppergradient").width($("#" + objid).width());
+			}
+			$("#uppergradient").position({
+			    my : "left top",
+			    at : "left top",
+			    of : "#" + objid
+			});
+		}
+		else
+		{
+			$("#uppergradient").remove();
+		}
+
+		if( $("#" + objid).attr("scrollTop") < ($("#" + objid).attr("scrollHeight") - $("#" + objid).height()) )
+		{
+			if( !$("#lowergradient").length )
+			{
+				$("#" + objid).append('<div id="lowergradient" style="background-image:url(/image/common/gradient_' + type + '_down.png);"><SPAN class="ui-icon ui-icon-arrowthickstop-1-s" onclick="scrolldiv(\'' + objid + '\',\'BOTTOM\')"></SPAN><span onclick="scrolldiv(\'' + objid + '\',\'BOTTOM\')">맨아래로</span><span>&nbsp;</span><SPAN class="ui-icon ui-icon-arrowthick-1-s" onclick="scrolldiv(\'' + objid + '\',40)"></SPAN><span onclick="scrolldiv(\'' + objid + '\',40)">아래로</span></div>');
+				$("#" + objid + " span").disableSelection();
+				$("#lowergradient").width($("#" + objid).width());
+			}
+			$("#lowergradient").position({
+			    my : "left bottom",
+			    at : "left bottom",
+			    of : "#" + objid
+			});
+		}
+		else
+		{
+			$("#lowergradient").remove();
+		}
+	}
+
+}
+
+function scrolldiv(objid, type)
+{
+	if( type == 'TOP' ) $("#" + objid).attr("scrollTop", 0);
+	else if( type == 'BOTTOM' ) $("#" + objid).attr("scrollTop", $("#" + objid).attr("scrollHeight"));
+	else if( !isNaN(type) ) $("#" + objid).attr("scrollTop", $("#" + objid).attr("scrollTop") + type);
+	scrollGradient(objid);
+}
+
+function getUrl()
+{
+	return document.URL;
+}
+
+function getUrlPath()
+{
+	return getUrl().split('?')[0];
+}
+
+function getUrlRequest(arg)
+{
+	var requests = getUrl().split('?')[1];
+	if( !requests )
+	{
+		return '';
+	}
+	else
+	{
+		requests = requests.split('&');
+		var parsedRequest = {};
+		for( var temp = 0; temp < requests.length; temp++ )
+		{
+			requests[temp] = requests[temp].split('=');
+			parsedRequest[requests[temp][0]] = requests[temp][1];
+		}
+		if( arg )
+		{
+			return parsedRequest[arg];
+		}
+		return requests;
+	}
+}
+
+function makeurl(requests)
+{
+	requests = requests.split('&');
+	var newrequests = '';
+	for( var temp = 0; temp < requests.length; temp++ )
+	{
+		requests[temp] = requests[temp].split('=');
+		newrequests += encodeURIComponent(requests[temp][0]) + '=' + encodeURIComponent(requests[temp][1]) + '&';
+	}
+	return (getUrlRequest().length > 0) ? getUrl() + '&' + newrequests : getUrl() + '?' + newrequests;
+}
+
+// urls =
+// http://piedevlcl.uwayapply.com/_manager/process/xmltree.php?filepath=/_xmls/variables.xml&mode=new&newroot=가나다라
+// urls =
+// /_manager/process/xmltree.php?filepath=/_xmls/variables.xml&mode=new&newroot=가나다라
+// 이런형식의 주소
+function makesafeurl(urls)
+{
+	var requests = urls.split('?')[1];
+	if( !requests )
+	{
+		return urls.split('?')[0];
+	}
+	else
+	{
+		requests = requests.split('&');
+		var newrequests = '';
+		for( var temp = 0; temp < requests.length; temp++ )
+		{
+			requests[temp] = requests[temp].split('=');
+			newrequests += encodeURIComponent(decodeURIComponent(requests[temp][0])) + '=' + encodeURIComponent(decodeURIComponent(requests[temp][1])) + '&';
+		}
+		return urls.split('?')[0] + '?' + newrequests;
+	}
+}
+
+function replace_all(str, finds, replaces)
+{
+	if( typeof str != 'string' ) { return false; }
+	var str_temp = new Array();
+	for( var len_temp = 0, len = str.length; len_temp < len; len_temp++ )
+	{
+		if( str.substr(len_temp, 1) == finds )
+		{
+			str_temp[str_temp.length] = replaces;
+		}
+		else
+		{
+			str_temp[str_temp.length] = str.substr(len_temp, 1);
+		}
+	}
+	return str_temp.join('');
+
+}
+
+function getSerialize()
+{
+}
+
+function getRemoteAddr()
+{
+	ajaxget(script.remoteaddr.php, '', function(d)
+	{
+		window.d = d;
+	});
+	return d;
+}
+
+function getServerTime()
+{
+}
+
+function setEditor(obj, height, callback)
+{
+	/**
+	config.toolbar_Full =
+	[
+		{ name: 'document', items : [ 'Source','-','Save','NewPage','DocProps','Preview','Print','-','Templates' ] },
+		{ name: 'clipboard', items : [ 'Cut','Copy','Paste','PasteText','PasteFromWord','-','Undo','Redo' ] },
+		{ name: 'editing', items : [ 'Find','Replace','-','SelectAll','-','SpellChecker', 'Scayt' ] },
+		{ name: 'forms', items : [ 'Form', 'Checkbox', 'Radio', 'TextField', 'Textarea', 'Select', 'Button', 'ImageButton',
+			'HiddenField' ] },
+		'/',
+		{ name: 'basicstyles', items : [ 'Bold','Italic','Underline','Strike','Subscript','Superscript','-','RemoveFormat' ] },
+		{ name: 'paragraph', items : [ 'NumberedList','BulletedList','-','Outdent','Indent','-','Blockquote','CreateDiv',
+		'-','JustifyLeft','JustifyCenter','JustifyRight','JustifyBlock','-','BidiLtr','BidiRtl' ] },
+		{ name: 'links', items : [ 'Link','Unlink','Anchor' ] },
+		{ name: 'insert', items : [ 'Image','Flash','Table','HorizontalRule','Smiley','SpecialChar','PageBreak','Iframe' ] },
+		'/',
+		{ name: 'styles', items : [ 'Styles','Format','Font','FontSize' ] },
+		{ name: 'colors', items : [ 'TextColor','BGColor' ] },
+		{ name: 'tools', items : [ 'Maximize', 'ShowBlocks','-','About' ] }
+	];
+	/**/
+
+	callback = callback||function(arg){};
+	var h = height || '400';
+	$(obj).ckeditor(callback, {
+		toolbar:[
+			['Source', 'Preview', 'Maximize', 'FontSize', 'Bold', 'Italic', 'Underline', 'Strike', 'SpecialChar', 'TextColor', 'BGColor']
+			,['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'Indent','Outdent','RemoveFormat']
+//			[ 'Source', 'Maximize', 'FontSize', 'Bold', 'Italic', 'Underline', 'Strike', 'SpecialChar', 'TextColor', 'BGColor', 'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'NumberedList', 'BulletedList', 'RemoveFormat' ]
+		]
+		,uiColor:'#eeeeee'
+		,enterMode:CKEDITOR.ENTER_BR
+		,height:h
+		,autoUpdateElement:true
+		,entities:true
+		,toolbarCanCollapse:false
+		,enableTabKeyTools:false
+		,resize_enabled:false
+		,bodyClass:'pd10 contents'
+		,contentsCss:['/image/css/common.css'
+					,'/image/css/forms.css'
+					,'/image/css/color.css'
+					,'/image/css/grid.css'
+					,'/image/css/jquery-ui.css'
+					,'/image/css/jquery-ui-reset.css'
+					,'/image/css/jquery_extend.css'
+				]
+		,tabSpaces:4
+		,indentOffset:10
+		,autoParagraph:false
+//		,forcePasteAsPlainText:false
+		,forceEnterMode:true
+		,entities_additional:'#039,quot'
+	});
+	try
+	{
+		$(obj).ckeditor(function(evt)
+		{
+			this.dataProcessor.writer.setRules('p',{indent:false,breakBeforeOpen:false,breakAfterOpen:false,breakBeforeClose:false,breakAfterClose:true});
+		});
+	}catch(err){}
+}
+
+function freeze(msg)
+{
+	unfreeze();
+	msg = msg || '로딩중입니다...';
+	var $div = '<div class="ui-widget-overlay" style="z-index:9998; position:absolute; left:0; top:0;" id="freezeDiv"></div>';
+	$div += '<table style="z-index:9999; background-color:transparent; position:absolute; left:0; top:0;" id="freezeTable">';
+	$div += '<tr><th>';
+	$div += '<span class="red" style="font-size:12pt; background-color:#eee; display:block; padding:10px;">' + msg + '<br/><br/>';
+	$div += '본 화면이 지속되면 <a href="javascript:self.location.reload();">여기를 클릭해 새로고침</a>해주세요.</span>';
+	$div += '</th></tr></table>';
+	$('body').append($div);
+
+	$('#freezeDiv').height($(document).height()).width($(window).width());
+	$('#freezeTable').width($(window).width()).height($(window).height()).css('top',$(window).scrollTop());
+	$(window).scroll(function()
+	{
+		$('#freezeDiv').height($(document).height());
+		$('#freezeTable').css('top',$(window).scrollTop());
+	});
+}
+
+function unfreeze()
+{
+	$('#freezeDiv').remove();
+	$('#freezeTable').remove();
+	self.focus();
+}
+
+function tm(msg)
+{
+	msg = msg || '';
+	var $tm = $('.titleMassage:eq(0)');
+	if( $tm.length < 1 ) return false;
+
+	if( msg == '' )
+	{
+		$tm.html('');
+		$tm.effect('fade', {}, 500, function()
+		{
+			if( is_array(tmDelayedMsg) && tmDelayedMsg.length > 0 )
+			{
+				tm(tmDelayedMsg.shift());
+				if( !is_array(tmDelayedMsg) )
+				{
+					tmDelayedMsg = new Array(tmDelayedMsg);
+				}
+			}
+		});
+	}
+	else
+	{
+		if( $tm.html() != '' )
+		{
+			tmDelayedMsg[tmDelayedMsg.length] = msg;
+		}
+		else
+		{
+			$tm.html(msg);
+			$tm.show();
+			window.setTimeout(function()
+			{
+				tm('');
+			}, 1000);
+		}
+	}
+
+}
+
+function getDate($datetime)
+{
+	$datetime = $datetime || new Date();
+	return $.datepicker.formatDate('yymmdd', $datetime);
+}
+function getTime($datetime)
+{
+	$datetime = $datetime || new Date();
+	var res = String($datetime).match(/ ([0-9]{2}):([0-9]{2}):([0-9]{2}) /);
+	return res[1] + '' + res[2] + '' + res[3] + '.' + $datetime.getMilliseconds();
+}
+function getDateTime($datetime)
+{
+	$datetime = $datetime || new Date();
+	return getDate($datetime) + '' + getTime($datetime);
+}
+
+/**
+ * dialogs for div setting obj 설정에는 반드시 label [변수제목], name [변수명], type [입력형식,
+ * 현재는 무조건 text, textarea 만, 하지만 codeset이 지정되면 자동으로 select형식이 된다. ] 이 지정되어야 한다.
+ * 기타 설정으로는 notnull [필수값인지, true, false], validtype [데이터입력형식], validmsg [해당형식이
+ * 아닌 경우 메세지], value [기본값], codeset [true, false]
+ */
+$(function()
+{
+	var dialog_formset_html = '\
+		<div style="display:none;" id="dialog_formset" title="">\
+			<input type="hidden" name="dialog_formset_startfield" id="dialog_formset_startfield" value="" />\
+			<input type="hidden" name="dialog_formset_exectitle" id="dialog_formset_exectitle" value="" />\
+			<input type="hidden" name="dialog_formset_execfunc" id="dialog_formset_execfunc" value="dialogDoing" />\
+			<div id="dialog_formset_template" class="fields contents" style="display:none;" >\
+				<div class="region size1of1 bold mb5"><label for="dialog_formset_[inputs_name]" id="dialog_formset_[inputs_name]_label">[inputs_label]</label></div>\
+				<div class="region size1of1 mb10" id="dialog_formset_template_text">\
+					<input type="text" name="dialog_formset_[inputs_name]" id="dialog_formset_[inputs_name]" class="w99 ui-corner-all plain [ime]" [inputs_readonly] value="[inputs_value]"  enter="[inputs_enter]" next="[inputs_next]" [auto] />\
+				</div>\
+				<div class="region size1of1 " id="dialog_formset_template_hidden">\
+					<input type="hidden" name="dialog_formset_[inputs_name]" id="dialog_formset_[inputs_name]" readOnly value="[inputs_value]"  enter="[inputs_enter]" next="[inputs_next]" />\
+				</div>\
+				<div class="region size1of1 mb10" id="dialog_formset_template_password">\
+					<input type="password" name="dialog_formset_[inputs_name]" id="dialog_formset_[inputs_name]" class="w99 plain ui-corner-all engonly" value="[inputs_value]"  enter="[inputs_enter]" next="[inputs_next]" />\
+				</div>\
+				<div class="region size1of1 mb10" id="dialog_formset_template_textarea">\
+					<textarea name="dialog_formset_[inputs_name]" editor="[editor]" id="dialog_formset_[inputs_name]" class="w99 plain ui-corner-all [ime]" [height] >[inputs_value]</textarea>\
+				</div>\
+				<div class="region size1of1 mb10" id="dialog_formset_template_select">\
+					<select name="dialog_formset_[inputs_name]" id="dialog_formset_[inputs_name]" class="w99 ui-corner-all"  enter="[inputs_enter]" next="[inputs_next]"></select>\
+				</div>\
+				<div class="region size1of1 " id="dialog_formset_template_radio">\
+					<label for="dialog_formset_[inputs_id]" id="dialog_formset_[inputs_id]_label" style="vertical-align:top;">\
+					<input type="radio" name="dialog_formset_[inputs_name]" id="dialog_formset_[inputs_id]" value="[inputs_codesetdataset_code]" [checked] />[inputs_codesetdataset_name]</label>\
+				</div>\
+				<div class="region size1of1 " id="dialog_formset_template_checkbox">\
+					<label for="dialog_formset_[inputs_id]" id="dialog_formset_[inputs_id]_label" style="vertical-align:top;">\
+					<input type="checkbox" name="dialog_formset_[inputs_name]" id="dialog_formset_[inputs_id]" value="[inputs_codesetdataset_code]" [checked] />[inputs_codesetdataset_name]</label>\
+				</div>\
+			</div>\
+		</div>\
+	';
+	var $body = $('body')||$(document);
+	$body.append(dialog_formset_html);
+	$('#dialog_formset').dialog({
+		bgiframe:true,autoOpen:false,modal:true,resizable:true,width:600,closeOnEscape:true,
+//		maxWidth:$(window).width()>800?800:$(window).width(),maxHeight:$(window).height()>600?600:$(window).height(),
+		open:function()
+		{
+			$('#'+$('#dialog_formset_startfield').val()).focus();
+		},
+		close:function()
+		{
+			if( window.editors.length>0 )
+			{
+				for( var temp=0; temp<window.editors.length; temp++ )
+				{
+					try{ $('#'+window.editors[temp]).ckeditorGet().destroy(); }catch(err){}
+				}
+			}
+
+			document.body.style.overflow = window.defaultBodyFlow;
+			$('#dialog_formset').find('#dialog_htmls').remove();
+			$('#dialog_formset').dialog('option','title','');
+			if( eval('window.'+$('#dialog_formset_execfunc').val()) )
+			{
+				eval($('#dialog_formset_execfunc').val()+'();');
+			}
+		},
+		buttons:{
+			"확인":function()
+			{
+				var inputs = window.uiconfig.inputs;
+				var vals = {};
+				for(var temp=0; temp<inputs.length; temp++)
+				{
+					var obj = $('#dialog_formset_'+inputs[temp].name);
+					var label = inputs[temp].label;
+					if( obj.length==0 )
+					{
+						if( $('input[name="dialog_formset_'+inputs[temp].name+'"]').length>0 )
+						{
+							var obj = $('input[name="dialog_formset_'+inputs[temp].name+'"]:checked');
+						}
+						else if( $('select[name="dialog_formset_'+inputs[temp].name+'"]').length>0 )
+						{
+							var obj = $('select[name="dialog_formset_'+inputs[temp].name+'"]');
+						}
+						var val = '';
+						if( obj.length>0 )
+						{
+							window.tempval = '';
+							obj.each(function()
+							{
+								if( window.tempval!='' ) window.tempval += window.__SEP__;
+								window.tempval += $(this).val();
+							});
+							val = window.tempval;
+							window.tempval = null;
+						}
+					}
+					else
+					{
+						var val = String(obj.val()||'');
+						if( inputs[temp].type!='textarea' )
+						{
+							val = val.replace(/=/g,'%3D').replace(/\&/g,'%26').replace(/\"/g,'″').replace(/^\<p\>/,'').replace(/\<\/p\>$/,'');
+							obj.val(val);
+						}
+					}
+
+					if( val=='' && inputs[temp].notnull=='true' )
+					{
+						window.temp = obj;
+						alert(label+'을(를) 입력하셔야 합니다.',function()
+						{
+							window.temp.length>1? window.temp[0].focus():window.temp.focus();
+						});
+						return false;
+					}
+					else
+					{
+						if( val!='' && inputs[temp].validtype && inputs[temp].validtype!='' )
+						{
+							var reg = eval(inputs[temp].validtype);
+							if( !reg.test(val) )
+							{
+								if( !inputs[temp].validmsg ) inputs[temp].validmsg = '지정된 형식으로 입력해야 합니다.';
+								window.temp = obj;
+								alert(inputs[temp].validmsg,function()
+								{
+									window.temp.length>1? window.temp[0].focus():window.temp.focus();
+								});
+								return false;
+							}
+						}
+						vals[inputs[temp].name] = val;
+					}
+				}	// end of for(var temp=0; temp<inputs.length; temp++)
+
+				var title = $('#dialog_formset_exectitle').val()||$('#dialog_formset').dialog('option','title');
+				eval('var res = '+$('#dialog_formset_execfunc').val()+'("'+title+'",vals);');
+				if(res==true) $('#dialog_formset').dialog('close');
+			},
+			"취소":function()
+			{
+				$('#dialog_formset').dialog('close');
+			}
+		}
+	});	// end of $('#dialog_formset').dialog({
+
+	/**
+	 * ui : object
+	 * ex :
+	 * var div = {
+	 * 		title:'DIV'
+	 * 		,inputs:[
+	 * 			{ label:'DIV명', name:'name', type:'text', notnull:true, codeset:false, validtype:'/^[a-zA-Z_]([a-zA-Z0-9_]+)$/', validmsg:'2글자 이상의 영문 소문자와 대문자, 숫자와 _(언더바)를 사용할 수 있습니다.\n\n또한, 숫자는 시작하는 문자로 이용할 수 없습니다.' }
+	 * 		]
+	 * 		,template:'\
+	 * 			<fieldset class="real">\ <legend>[name]</legend>\ <div id="[name]" class="layout droppable">&nbsp;</div>\ </fieldset>\ '
+	 * }
+	 */
+	window.dialog_form = function(config)
+	{
+		window.defaultBodyFlow = document.body.style.overflow;
+		$('body').css("overflow","hidden");
+		window.uiconfig = config;
+		$('#dialog_formset').dialog('option','title',window.uiconfig['title']);
+// $('#dialog_formset').dialog('option','maxHeight',$(window).height()>500?500:$(window).height());
+		$('#dialog_formset_execfunc').val('dialogDoing');
+		$('#dialog_htmls').remove();
+		$('#dialog_formset_startfield').val('');
+		window.editors = new Array();
+		var htmls = '';
+		var skipindex = 1;
+		var contentedit = 'yes';
+		for(var temp=0; temp<window.uiconfig['inputs'].length; temp++)
+		{
+			var inputs = window.uiconfig['inputs'][temp];
+			for( var a in inputs )
+			{
+				inputs[a.strtolower()] = inputs[a];
+			}
+			if( !inputs['type'] ) inputs['type'] = 'text';
+			if( !inputs ) break;
+			if( inputs['name']=='contentedit' ) contentedit = inputs['DEFAULT'];
+			var temphtml = $('#dialog_formset_template').clone();
+
+			if( inputs['type']=='select' )
+			{
+				temphtml.find('#dialog_formset_template_text,#dialog_formset_template_password,#dialog_formset_template_textarea,#dialog_formset_template_radio,#dialog_formset_template_checkbox,#dialog_formset_template_hidden').remove();
+			}
+			else if( inputs['type']=='radio' )
+			{
+				temphtml.find('#dialog_formset_template_text,#dialog_formset_template_password,#dialog_formset_template_textarea,#dialog_formset_template_select,#dialog_formset_template_checkbox,#dialog_formset_template_hidden').remove();
+			}
+			else if( inputs['type']=='checkbox' )
+			{
+				temphtml.find('#dialog_formset_template_text,#dialog_formset_template_password,#dialog_formset_template_textarea,#dialog_formset_template_select,#dialog_formset_template_radio,#dialog_formset_template_hidden').remove();
+			}
+			else if( inputs['type']=='text' )
+			{
+				temphtml.find('#dialog_formset_template_checkbox,#dialog_formset_template_password,#dialog_formset_template_textarea,#dialog_formset_template_select,#dialog_formset_template_radio,#dialog_formset_template_hidden').remove();
+			}
+			else if( inputs['type']=='hidden' )
+			{
+				temphtml.find('label,#dialog_formset_template_checkbox,#dialog_formset_template_password,#dialog_formset_template_textarea,#dialog_formset_template_select,#dialog_formset_template_radio,#dialog_formset_template_text').remove();
+			}
+			else if( inputs['type']=='password' )
+			{
+				temphtml.find('#dialog_formset_template_checkbox,#dialog_formset_template_text,#dialog_formset_template_textarea,#dialog_formset_template_select,#dialog_formset_template_radio,#dialog_formset_template_hidden').remove();
+			}
+			else if( inputs['type']=='textarea' )
+			{
+				if( contentedit=='no' ) continue;
+				temphtml.find('#dialog_formset_template_checkbox,#dialog_formset_template_text,#dialog_formset_template_password,#dialog_formset_template_select,#dialog_formset_template_radio,#dialog_formset_template_hidden').remove();
+			}
+
+
+			if( $('#dialog_formset_startfield').val()=='' && !inputs['readonly'] && inputs['type']!='hidden' )
+			{
+				$('#dialog_formset_startfield').val('dialog_formset_'+inputs['name']);
+			}
+
+			var notnull = '&nbsp; ';
+			if( inputs['notnull']=='true' ) notnull = '<span style="color:red">* </span>';
+			var validtype = '';
+//			var validtype = inputs['validtype']?'<span style="color:#666;"> (입력형식:'+inputs['validtype']+')</span>':'';
+
+			temphtml = temphtml.html();
+			while(temphtml.match(/(\[inputs_name\])/)) temphtml = temphtml.replace('[inputs_name]',inputs['name']);
+			while(temphtml.match(/(\[inputs_label\])/)) temphtml = temphtml.replace('[inputs_label]',notnull+inputs['label']+validtype);
+			if( inputs['type']=='textarea' )
+			{
+				if( inputs['default'] )
+				{
+					while( inputs['default'].match(/(&quot;)/) )
+					{
+						inputs['default'] = inputs['default'].replace('&quot;','"');
+					}
+					while( inputs['default'].match(/(\^)/) )
+					{
+						inputs['default'] = inputs['default'].replace('^','<');
+					}
+					while( inputs['default'].match(/(\$)/) )
+					{
+						inputs['default'] = inputs['default'].replace('$','>');
+					}
+					temphtml = temphtml.replace(/\[inputs_value\]/g,inputs['default']);
+				}
+				else
+				{
+					temphtml = temphtml.replace(/\[inputs_value\]/g,'');
+				}
+				temphtml = temphtml.replace('[editor]',inputs['editor']);
+				if( inputs['editor']=='true' )
+				{
+					window.editors[window.editors.length] = 'dialog_formset_'+inputs['name'];
+				}
+				else if( inputs['height'] )
+				{
+					temphtml = temphtml.replace('[height]','style="height:'+inputs['height']+';"');
+				}
+			}
+			else
+			{
+				if( inputs['default'] )
+				{
+					if( temphtml.match(/(=\[inputs_value\])/) )
+					{
+						temphtml = temphtml.replace(/=\[inputs_value\]/g,'="'+inputs['default']+'"');
+					}
+					temphtml = temphtml.replace(/\[inputs_value\]/g,inputs['default']);
+				}
+				else
+				{
+					if( temphtml.match(/(=\[inputs_value\])/) )
+					{
+						temphtml = temphtml.replace(/=\[inputs_value\]/g,'=""');
+					}
+					temphtml = temphtml.replace(/\[inputs_value\]/g,'');
+				}
+			}
+
+			temphtml = inputs['ime']? temphtml.replace('[ime]',inputs['ime']) : temphtml.replace('[ime]','');
+			temphtml = (inputs['readonly']=='true')? temphtml.replace('[inputs_readonly]','readOnly') : temphtml.replace('[inputs_readonly]',' ');
+			temphtml = inputs['auto']? temphtml.replace('[auto]','auto="'+inputs['auto']+'"') : temphtml.replace('[auto]','');
+
+			var skipok = false;
+			if( inputs['type']!='hidden' )
+			{
+				while( skipok==false && skipindex<=window.uiconfig['inputs'].length )
+				{
+					if( (temp+skipindex)>=window.uiconfig['inputs'].length )
+					{
+						temphtml = temphtml.replace('[inputs_enter]','exec');
+						temphtml = temphtml.replace('[inputs_next]','');
+						skipok = true;
+					}
+					else
+					{
+						if( (window.uiconfig['inputs'][temp+skipindex]['type']||'text')=='hidden' )
+						{
+							skipindex++;
+						}
+						else
+						{
+							temphtml = temphtml.replace('[inputs_enter]','next');
+							temphtml = temphtml.replace('[inputs_next]','dialog_formset_'+window.uiconfig['inputs'][temp+skipindex]['name']);
+							skipok = true;
+						}
+					}
+				}
+			}
+
+			temphtml = $('<div id="dialog_formset_template" style="display:none;" >'+temphtml+'</div>');
+
+			if( inputs['type']=='select' )
+			{
+				if( inputs['nullvalue']!='false' )
+				{
+					if( temphtml.find('select') ) temphtml.find('select').append('<option value="">선택하세요.</option>');
+				}
+				if( inputs['dataset'] )
+				{
+					var opts = inputs['dataset'].split(',');
+					for( var optindex=0; optindex<opts.length; optindex++ )
+					{
+						var slct = '';
+						if( opts[optindex].indexOf(window.__SEP__)>-1 )
+						{
+							var nowcodeset = opts[optindex].split(window.__SEP__);
+						}
+						else
+						{
+							var nowcodeset = new Array(opts[optindex],opts[optindex]);
+						}
+						if( nowcodeset[0]==inputs['default'] ) slct = 'selected';
+						if( temphtml.find('select') ) temphtml.find('select').append('<option value="'+nowcodeset[0]+'" '+slct+'>'+nowcodeset[1]+'</option>');
+					}
+				}
+				else if( inputs['codeset'] )
+				{
+					var CSparams = '';
+					if( window.getParamForCodeset )
+					{
+						CSparams = window.getParamForCodeset(window.uiconfig['tagtype'],inputs['name']);
+					}
+					ajaxpost(inputs['codeset'],CSparams,function(d)
+					{
+						window.d = d;
+					});
+					$(d).children().children().each(function()
+					{
+						var slct = '';
+						if( $(this).find('CODE').text()==inputs['default'] ) slct = 'selected';
+						if( temphtml.find('select') ) temphtml.find('select').append('<option value="'+$(this).find('CODE').text()+'" '+slct+'>'+$(this).find('NAME').text()+'</option>');
+					});
+				}
+			}
+			else if( inputs['type'].match(/^(radio|checkbox)$/) )
+			{
+				var $tempset = temphtml.find('#dialog_formset_template_'+inputs['type']);
+				temphtml.find('#dialog_formset_template_'+inputs['type']).remove();
+				var $temphtml = '';
+
+				if( inputs['dataset'] )
+				{
+					var opts = inputs['dataset'].split(',');
+					for(var $temp=0; $temp<opts.length; $temp++)
+					{
+						var opt = opts[$temp].split(window.__SEP__);
+						if( opt.length>1 )
+						{
+							var cd = opt[0];
+							var nm = opt[1];
+						}
+						else
+						{
+							var cd = opt[0];
+							var nm = opt[0];
+						}
+						var $tempsethtml = $tempset.html();
+						while($tempsethtml.match(/\[inputs_(id|codesetdataset_code|codesetdataset_name)\]/)) $tempsethtml = $tempsethtml.replace('[inputs_id]',inputs['name']+$temp).replace('[inputs_codesetdataset_code]',cd).replace('[inputs_codesetdataset_name]',nm);
+						var tempDefault = String(inputs['default']).split(window.__SEP__);
+						if( in_array(cd,tempDefault) ) $tempsethtml = $tempsethtml.replace('[checked]','checked');
+						else $tempsethtml = $tempsethtml.replace('[checked]','');
+						$temphtml += $tempsethtml;
+					}
+				}
+				else if( inputs['codeset'] )
+				{
+					var CSparams = '';
+					if( window.getParamForCodeset )
+					{
+						CSparams = window.getParamForCodeset(window.uiconfig['tagtype'],inputs['name']);
+					}
+					ajaxpost(inputs['codeset'],CSparams,function(d)
+					{
+						window.d = d;
+					});
+					$(d).children().children().each(function($temp)
+					{
+						var slct = '';
+						var cd = $(this).find('CODE').text();
+						var nm = $(this).find('NAME').text();
+
+						var $tempsethtml = $tempset.html();
+						while( $tempsethtml.match(/\[inputs_(id|codesetdataset_code|codesetdataset_name)\]/) )
+						{
+							$tempsethtml = $tempsethtml.replace('[inputs_id]',inputs['name']+$temp)
+														.replace('[inputs_codesetdataset_code]',cd)
+														.replace('[inputs_codesetdataset_name]',nm);
+						}
+						var tempDefault = String(inputs['default']).split(window.__SEP__);
+						if( in_array(cd,tempDefault) ) $tempsethtml = $tempsethtml.replace('[checked]','checked');
+						else $tempsethtml = $tempsethtml.replace('[checked]','');
+						$temphtml += $tempsethtml;
+
+					});
+				}
+
+				temphtml.append('<div class="region size1of1 mb10">'+$temphtml+'</div>');
+			}
+			htmls += temphtml.html();
+		}
+		$('#dialog_formset_template').after('<div id="dialog_htmls">'+htmls+'<br/></div>');
+		if(window.fn_dialog_form_select)
+		{
+			$('#dialog_formset').find('select').change(function()
+			{
+				if(window.fn_dialog_form_select) window.fn_dialog_form_select(this.name,this.value);
+			});
+			$('#dialog_formset').find('select').each(function()
+			{
+				window.fn_dialog_form_select(this.name,this.value);
+			});
+		}
+
+		$('#dialog_formset').dialog('option','height','auto');
+		if( window.editors.length>0 )
+		{
+			for( var temp=0; temp<window.editors.length; temp++ )
+			{
+				setEditor($('#'+window.editors[temp]),'200',function(){$('#dialog_formset').dialog('option','position','center');});
+			}
+		}
+		if( window.uiconfig['width'] )
+		{
+			$('#dialog_formset').dialog('option','width',window.uiconfig['width']);
+		}
+		if( window.uiconfig['height'] )
+		{
+			$('#dialog_formset').dialog('option','height',window.uiconfig['height']);
+		}
+
+		$('#dialog_formset').dialog('open');
+		$('#dialog_formset').dialog('option','maxHeight',$(window).height());
+		$('#dialog_formset').css('overflow-x','hidden');
+		if( $('#dialog_formset').parent().height()>$('#dialog_formset').dialog('option', 'maxHeight') )
+		{
+			$('#dialog_formset').dialog('option','height',$('#dialog_formset').dialog('option','maxHeight')-10);
+			$('#dialog_formset').dialog('option','position','center');
+		}
+		$('#dialog_formset').find(":input[auto]").each(function()
+		{
+			$(this).autocomplete(
+			{
+				delay:100,
+				minLength:0,
+				source:$(this).attr('auto').split(window.__SEP__)
+			});
+			$(this).focus(function()
+			{
+				$(this).autocomplete('search',$(this).val());
+			});
+		});	// $('#dialog_formset').find(":input[auto]").each(function()
+		$('#dialog_formset').find(":input[enter]").keypress(function(evt)
+		{
+			if( !evt.shiftKey && !evt.altKey && !evt.ctrlKey && $(this).attr('enter')=='exec' && evt.keyCode==13 )
+			{
+				$(this).blur();
+				var ops = $("#dialog_formset").dialog('option','buttons');
+				ops.확인();
+			}
+			if( !evt.shiftKey && !evt.altKey && !evt.ctrlKey && $(this).attr('enter')=='next' && evt.keyCode==13 )
+			{
+				$(this).blur();
+				if( $('#'+$(this).attr('next')).length>0 ) $('#'+$(this).attr('next')).focus();
+				else $('#'+$(this).attr('next')+'0').focus();
+			}
+		});	// end of $("#dialog_formset_name").keypress(function(evt)
+		$('#dialog_formset').find("select[enter]").change(function(evt)
+		{
+			if( !evt.shiftKey && !evt.altKey && !evt.ctrlKey && $(this).attr('enter')=='next' )
+			{
+				$(this).blur();
+				$('#'+$(this).attr('next')).focus();
+			}
+		});	// end of $("#dialog_formset_name").keypress(function(evt)
+
+	}	// end of function dialog_form(ui)
+});
+
+function dialogClose()
+{
+	$('#dialog_formset').dialog('close');
+}
+
+window._confirm = window.confirm;
+var dialog_conf_open = '<div style="display:none;" class="fields ui-corner-all dialog_confirmMsg" title="확인!"><div class="region"><span class="ui-icon ui-icon-help" style="margin-top:-1px;"></span></div><div class="region" style="max-width:460px; width:460px;"><span id="confmsg">';
+var dialog_conf_close = '</span></div></div>';
+window.confirm = function(msg,okFunc,noFunc,conFunc,btnYLabel,btnNLabel)
+{
+	alarm('noti');
+	if( !okFunc )	okFunc = function(){};
+	if( !noFunc )	noFunc = function(){};
+	if( !conFunc )	conFunc = function(){};
+	btnYLabel = btnYLabel||'예';
+	btnNLabel = btnNLabel||'아니오';
+
+	var buttonsObj = {};
+	buttonsObj[btnYLabel] = function()
+	{
+		okFunc();
+		$(this).attr('executed','true');
+		$(this).dialog('destroy');
+	}
+	buttonsObj[btnNLabel] = function()
+	{
+		noFunc();
+		$(this).attr('executed','true');
+		$(this).dialog('destroy');
+	}
+
+	$(window.dialog_conf_open+msg+window.dialog_conf_close).dialog({
+		bgiframe:true, autoOpen:true, modal:true, resizable:false,width:500,
+		open:function()
+		{
+		},
+		close:function()
+		{
+			if( $(this).attr('executed')!='true' )
+			{
+				noFunc();
+			}
+			conFunc();
+		},
+		buttons:buttonsObj
+	}).css({'display':'flex','justify-content':'center','align-items':'top'});	// end of $('#dialog_infomsg').dialog({
+	return true;
+}
+
+window._alert = window.alert;
+var dialog_info_open = '<div style="display:none;" class="fields ui-corner-all dialog_infomsg" id="dialog_infomsg" title="알림!"><div class="region"><span class="ui-icon ui-icon-info"></span></div><div class="region" style="max-width:460px; width:460px;"><span id="infomsg">';
+var dialog_info_close = '</span></td></tr></table></div>';
+window.alert = function(msg,conFunc,btnLabel)
+{
+	alarm('noti');
+	if( !conFunc )	conFunc = function(){};
+	btnLabel = btnLabel||'확인';
+
+	var buttonsObj = {};
+	buttonsObj[btnLabel] = function()
+	{
+		$(this).dialog('close');
+	}
+
+	$(window.dialog_info_open+msg+window.dialog_info_close).dialog({
+		bgiframe:true, autoOpen:true, modal:true, resizable:false,width:500, stack:false,
+		open:function()
+		{
+		},
+		close:function()
+		{
+			conFunc();
+			$(this).dialog('destroy');
+		},
+		buttons:buttonsObj
+	}).css({'display':'flex','justify-content':'center','align-items':'top'});	// end of $('#dialog_infomsg').dialog({
+
+	$(window).unbind('scroll');
+	$(window).scroll(function(){$('.ui-widget-overlay').height($(document).height());});
+
+	return true;
+}
+
+/**
+ * 2018/05/08 16:56:24 김준
+ * 예제
+	var $messageObj = message('메세지 테스트<br/>메세지 테스트<br/><br/>메세지 테스트<br/><br/><br/>메세지 테스트');
+	window.setTimeout(function()
+	{
+		quitMessage($messageObj);
+	}, 5000);
+**/
+function message(msg)
+{
+	return $(window.dialog_info_open+msg+window.dialog_info_close).dialog({dialogClass:"no-close",bgiframe:true,autoOpen:true,modal:true,resizable:false,width:500,stack:false,buttons:false}).css({'display':'flex','justify-content':'center','align-items':'top'});
+}
+function quitMessage($obj)
+{
+	$obj.dialog('close');
+}
+
+function post($url, $data, winName, features)
+{
+	$('#posttempform').remove();
+	$('body').append('<form action="'+$url+'" id="posttempform" method="post"></form>');
+
+	if( $data )
+	{
+		var $datas = $data.split('&');
+		for( var temp=0; temp<$datas.length; temp++ )
+		{
+			var $d = $datas[temp].split('=');
+			$('#posttempform').append('<input type="hidden" name="'+$d[0]+'" value="'+$d[1]+'"/>');
+		}
+	}
+
+	var popwin = null;
+	if( winName && String(typeof winName).toLowerCase()=='string' && !String(winName).match(/^(parent|self|opener|top)$/) )
+	{
+		if( $('#id_'+getWinName(winName)).length )
+		{
+			$('#id_'+getWinName(winName)).remove();
+		}
+		var attrs = {};
+		if( !!features )
+		{
+			features = features.split(',');
+			for( var temp=0; temp<features.length; temp++ )
+			{
+				var tempAttr = features[temp].split('=');
+				attrs[tempAttr[0]] = tempAttr[1];
+			}
+		}
+
+		$('<div style="display:none; width:'+attrs['width']+'; height:'+attrs['height']+';" class="dialog_popWindow" id="id_'+getWinName(winName)+'" title="'+winName+'"><iframe src="about:blank" frameborder="0" width="100%" height="100%" name="'+winName+'"></iframe></div>').dialog({
+			bgiframe:false,modal:true
+			,autoOpen:attrs['loadhidden']=='yes'?false:true
+			,resizable:(attrs['resizable']=='no'?false:true)
+			,width:Number(attrs['width'])+15
+			,height:Number(attrs['height'])+70
+			,open:function()
+			{
+				$('body').css('overflow','hidden').attr('scroll','no');
+
+				/**
+				 * 환불 서비스에서의 팝업
+				 */
+				if($url.match(/rep/))
+				{
+					$(this).css({'padding':'0','overflow':'hidden','background-color':'white'});
+					$(this).parent().css({'background-color':'#23b292;','padding-top':'0','padding-left':'3px','padding-right':'3px','padding-bottom':'3px'});
+					$(this).parent().find('.ui-widget-header').css({'background-color':'#23b292;','border':'0px','padding-top':'10px','padding-bottom':'10px'});
+					$(this).parent().find('.ui-widget-header > .ui-dialog-title').css({'font-family':'Malgun Gothic','color':'white','font-size':'18px','line-height':'1.5','font-weight':'bold','padding-left':'-15px','text-align':'center','margin-top':'-2px','width':'100%'});
+					$(this).parent().find('.ui-widget-header > .ui-dialog-titlebar-close').css({'margin':'0','top':'5px','right':'0px','position':'absolute','border':'none !important'});
+					$(this).parent().find('.ui-widget-header > .ui-dialog-titlebar-close > .ui-icon-closethick').css({'background-image':'url("../image/common/close.png")','background-color':'#23b292','background-position':'0 0','width':'36px','height':'30px'});
+					$(this).parent().find('.ui-widget-header > a.ui-dialog-titlebar-close').removeClass('ui-dialog-titlebar-close ui-corner-all').mouseover(function(){$(this).css('border','none');});
+				}
+			}
+			,close:function()
+			{
+				try
+				{
+					if( document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck ) document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck(winName);
+
+				}
+				catch(err){}
+				if( window.postCloseCheck ) window.postCloseCheck(winName);
+				$('body').css('overflow','visible').attr('scroll','auto');
+//				$('#id_'+getWinName(winName)).remove();
+			}
+			,beforeClose:function(evt, ui)
+			{
+				try
+				{
+					if( document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck ) return document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck(winName, evt, ui);
+
+				}
+				catch(err){}
+				if( window.beforeCloseCheck ) return window.beforeCloseCheck(winName, evt, ui);
+			}
+		});	// end of $('#dialog_formset').dialog({
+
+		$('#posttempform').attr('target',winName);
+	}
+	else if( winName && String(winName).match(/^(parent|self|opener|top)$/) )
+	{
+		$('#posttempform').attr('target',winName);
+	}
+	$('#posttempform').submit();
+	$('#posttempform').remove();
+	return popwin;
+}
+
+function postFrameless($url, $data, features)
+{
+	var winName = Date.now();
+	$('#posttempform').remove();
+	$('body').append('<form action="'+$url+'" id="posttempform" method="post"></form>');
+
+	if( $data )
+	{
+		var $datas = $data.split('&');
+		for( var temp=0; temp<$datas.length; temp++ )
+		{
+			var $d = $datas[temp].split('=');
+			$('#posttempform').append('<input type="hidden" name="'+$d[0]+'" value="'+$d[1]+'"/>');
+		}
+	}
+
+	var popwin = null;
+	if( 1 )
+	{
+		if( $('#id_'+getWinName(winName)).length )
+		{
+			$('#id_'+getWinName(winName)).remove();
+		}
+		var attrs = {};
+		if( !!features )
+		{
+			features = features.split(',');
+			for( var temp=0; temp<features.length; temp++ )
+			{
+				var tempAttr = features[temp].split('=');
+				attrs[tempAttr[0]] = tempAttr[1];
+			}
+		}
+
+		$('<div style="display:none; width:'+attrs['width']+'; height:'+attrs['height']+';" class="dialog_popWindow" id="id_'+getWinName(winName)+'" title="'+winName+'"><iframe src="about:blank" frameborder="0" width="100%" height="100%" name="'+winName+'"></iframe></div>').dialog({
+			bgiframe:false,autoOpen:true,modal:true,resizable:false
+			,dialogClass:'frameless'
+			,width:Number(attrs['width'])
+			,height:Number(attrs['height'])
+			,open:function()
+			{
+				$('body').css('overflow','hidden').attr('scroll','no');
+			}
+			,close:function()
+			{
+				try
+				{
+					if( document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck ) document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck(winName);
+				}
+				catch(err){}
+				if( window.postCloseCheck ) window.postCloseCheck(winName);
+				$('body').css('overflow','visible').attr('scroll','auto');
+			}
+			,beforeClose:function(evt, ui)
+			{
+				try
+				{
+					if( document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck ) return document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck(winName, evt, ui);
+
+				}
+				catch(err){}
+				if( window.beforeCloseCheck ) return window.beforeCloseCheck(winName, evt, ui);
+			}
+		});	// end of $('#dialog_formset').dialog({
+
+		$('#posttempform').attr('target',winName);
+	}
+	else if( winName && String(winName).match(/^(parent|self|opener|top)$/) )
+	{
+		$('#posttempform').attr('target',winName);
+	}
+	$('#posttempform').submit();
+	$('#posttempform').remove();
+	return popwin;
+}
+
+function getFrameless($url, $data, features)
+{
+	var winName = Date.now();
+	$('#posttempform').remove();
+	$('body').append('<form action="'+$url+'" id="posttempform" method="get"></form>');
+
+	if( $data )
+	{
+		var $datas = $data.split('&');
+		for( var temp=0; temp<$datas.length; temp++ )
+		{
+			var $d = $datas[temp].split('=');
+			$('#posttempform').append('<input type="hidden" name="'+$d[0]+'" value="'+$d[1]+'"/>');
+		}
+	}
+
+	var popwin = null;
+	if( 1 )
+	{
+		if( $('#id_'+getWinName(winName)).length )
+		{
+			$('#id_'+getWinName(winName)).remove();
+		}
+		var attrs = {};
+		if( !!features )
+		{
+			features = features.split(',');
+			for( var temp=0; temp<features.length; temp++ )
+			{
+				var tempAttr = features[temp].split('=');
+				attrs[tempAttr[0]] = tempAttr[1];
+			}
+		}
+
+		$('<div style="display:none; width:'+attrs['width']+'; height:'+attrs['height']+';" class="dialog_popWindow" id="id_'+getWinName(winName)+'" title="'+winName+'"><iframe src="about:blank" frameborder="0" width="100%" height="100%" name="'+winName+'"></iframe></div>').dialog({
+			bgiframe:false,autoOpen:true,modal:true,resizable:false
+			,dialogClass:'frameless'
+			,width:Number(attrs['width'])
+			,height:Number(attrs['height'])
+			,open:function()
+			{
+				$('body').css('overflow','hidden').attr('scroll','no');
+			}
+			,close:function()
+			{
+				try
+				{
+					if( document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck ) document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck(winName);
+				}
+				catch(err){}
+				if( window.postCloseCheck ) window.postCloseCheck(winName);
+				$('body').css('overflow','visible').attr('scroll','auto');
+			}
+			,beforeClose:function(evt, ui)
+			{
+				try
+				{
+					if( document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck ) return document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck(winName, evt, ui);
+
+				}
+				catch(err){}
+				if( window.beforeCloseCheck ) return window.beforeCloseCheck(winName, evt, ui);
+			}
+		});	// end of $('#dialog_formset').dialog({
+
+		$('#posttempform').attr('target',winName);
+	}
+	else if( winName && String(winName).match(/^(parent|self|opener|top)$/) )
+	{
+		$('#posttempform').attr('target',winName);
+	}
+	$('#posttempform').submit();
+	$('#posttempform').remove();
+	return popwin;
+}
+
+function formPost(url, $formObj, winName, width, height, features)
+{
+	var popwin = winpost('about:blank', '', winName, width, height, features);
+	$formObj.attr('action',url);
+	$formObj.attr('target',winName);
+	$formObj.submit();
+	$formObj.attr('action','');
+	$formObj.attr('target','');
+	return popwin;
+}
+
+function _formPost(url, $formObj, winName, width, height, features)
+{
+	var popwin = _winpost('about:blank', '', winName, width, height, features);
+	$formObj.attr('action',url);
+	$formObj.attr('target',winName);
+	$formObj.submit();
+	$formObj.attr('action','');
+	$formObj.attr('target','');
+	return popwin;
+}
+
+function getWinName(winName)
+{
+	return encodeURIComponent(winName).replace(/[ !@#$%^&*()-+=\|\\\/]/g,'_');
+}
+
+function getWinObj(winName)
+{
+	return $('#id_'+getWinName(winName));
+}
+
+function winpost($url, $data, winName, width, height, attr)
+{
+	if( !$data )	$data = '';
+	if( !winName )	winName = 'newWin';
+	if( !attr )	attr = 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=1,';
+	else if( !attr.match(/,$/) )	attr = attr+',';
+	if( !width )	width = '600';
+	if( !height )	height = '500';
+
+	return post($url, $data, winName, attr+'width='+width+',height='+height);
+}
+
+function _post($url, $data, winName, features)
+{
+	try
+	{
+		$('#posttempform').remove();
+		$('body').append('<form action="'+$url+'" id="posttempform" method="post"></form>');
+	}
+	catch (err)
+	{
+		alert('_post1 : '+err.message);
+	}
+
+	try
+	{
+
+		if( $data )
+		{
+			var $datas = $data.split('&');
+			for( var temp=0; temp<$datas.length; temp++ )
+			{
+				var $d = $datas[temp].split('=');
+				$('#posttempform').append('<input type="hidden" name="'+$d[0]+'" value="'+$d[1]+'"/>');
+			}
+		}
+	}
+	catch (err)
+	{
+		alert('_post2 : '+err.message);
+	}
+
+	try
+	{
+		var popwin = null;
+//		popwin = window.open('about:blank',encodeURIComponent(winName),features);
+		popwin = window.open('about:blank',winName,features);
+//		popwin = window.open($url,winName);
+	}
+	catch (err)
+	{
+//		alert('features : '+features);
+//		alert('_post3 : '+err.message);
+	}
+
+	try
+	{
+		$('#posttempform').attr('target',winName);
+	}
+	catch (err)
+	{
+		alert('_post4 : '+err.message);
+	}
+
+	try
+	{
+		$('#posttempform').submit();
+
+		return popwin;
+	}
+	catch (err)
+	{
+		alert('_post5 : '+err.message);
+	}
+}
+
+function _winpost($url, $data, winName, width, height, attr)
+{
+	try
+	{
+		if( !$data )	$data = '';
+		if( !winName )	winName = 'newWin';
+		if( !attr )	attr = 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=1,';
+		else if( !attr.match(/,$/) )	attr = attr+',';
+		if( !width )	width = '600';
+		if( !height )	height = '500';
+		return _post($url, $data, winName, attr+'width='+width+',height='+height);
+	}
+	catch (err)
+	{
+		alert('_winpost : '+err.message);
+	}
+}
+
+//close 변경 사용 시 참고
+//window.func = parent.getWinObj(self.name).dialog('option', 'close');
+//parent.getWinObj(self.name).dialog('option', 'close', function()
+//{
+//	parent.alert("a",function(){window.func();});
+//
+//});
+
+/**
+ * 도움말
+ */
+// 셀프 팝업 창 크기 바꾸기
+// parent.$('#id_Search').height($('body').height()+10);
+// 셀프 팝업 창 닫기
+// parent.winclose(self.name);
+
+function winclose(arg)
+{
+	getWinObj(arg).dialog('close');
+}
+
+
+// window._close = window.close;
+// self._close = self.close;
+// window.close = self.close = function()
+// {
+//
+// }
+//
+
+
+function set100widthFix()
+{
+//	$(':text[width=100%], textarea[width=100%]').each(function()
+//	{
+//		$(this).width($(this).width()-13);	// 필수표시 너비 고려
+//	});
+}
+
+function setAutoLayout(arg)
+{
+	arg = arg||'.autolayout';
+	try
+	{
+		$(arg).each(function()
+		{
+//			$(this).css('width', '97%');
+			var uniqueid = $(this).attr('uniqueid');
+			if( !uniqueid || uniqueid.match(/^(ms_)/) )
+			{
+				uniqueid = '__tempUniqueId_' + String(window.__tempUniqueId__++);
+				$(this).attr('uniqueid', uniqueid);
+			}
+			var separate = $(this).attr('separate');
+			autoLayout(uniqueid, separate);
+		});
+	}
+	catch (err)
+	{
+		alert('setAutoLayout : '+err.message);
+	}
+}
+
+/**
+ * 2011/06/09 19:38:08 김준
+ * 자동레이아웃에서 사용하는 함수
+ */
+function autoLayout(uniqueid, separate)
+{
+	try
+	{
+		var separate = separate || '';
+
+		if( $('*[uniqueid="'+uniqueid+'"]').children().length<2 ) return false;
+		if( !$('*[uniqueid="'+uniqueid+'"]').hasClass('region') ) $('*[uniqueid="'+uniqueid+'"]').addClass('region');
+
+		var topWidth = $('*[uniqueid="'+uniqueid+'"]').parent().width() - 16; // 필수기호,indent 들어가는 위치를 고려
+		$('*[uniqueid="'+uniqueid+'"]').width(topWidth);
+
+		if( topWidth>0 )
+		{
+			var maxWidth = null;
+			var pMaxWidth = null;
+			$('*[uniqueid="'+uniqueid+'"]').children().each(function()
+			{
+				if( !$(this).hasClass('region') ) $(this).addClass('region');
+
+				var w = $(this).width() + 0;	//	element size fix
+				if( maxWidth==null ) maxWidth = w;
+				else if( maxWidth<w ) maxWidth = w;
+			});
+
+			if( maxWidth )
+			{
+				var colNum = null;
+				var temp = 1;
+				while (colNum == null)
+				{
+					if( Number(maxWidth) * temp >= topWidth )
+					{
+						colNum = temp - 1;
+						break;
+					}
+					temp++;
+				}
+
+				if( colNum >= 1 )
+				{
+					if( $('*[uniqueid="' + uniqueid + '"]').children().length < colNum ) colNum = $('*[uniqueid="' + uniqueid + '"]').children().length;
+					var colWidth = Math.floor(Number(topWidth / colNum)) - 20;	//	element size fix
+					if( colWidth<maxWidth )
+					{
+						colWidth = maxWidth;
+					}
+
+					$('*[uniqueid="' + uniqueid + '"]').children().each(function()
+					{
+						$(this).html($(this).html().replace(eval('/' + separate + '$/i'), ''));
+						$(this).width(colWidth).css({'word-break':'break-all'});
+					});
+				}
+			}
+
+		}	//	end of if( topWidth>0 )
+
+	}	//	end of try
+	catch (err)
+	{
+		alert('autoLayout : '+ err.message+uniqueid);
+	}
+}	//	end of function autoLayout(uniqueid, separate)
+
+
+function setAutoLayout2(arg)
+{
+	arg = arg||'.autolayout2';
+	try
+	{
+		$(arg).each(function()
+		{
+//			$(this).css('width', '97%');
+			var uniqueid = $(this).attr('uniqueid');
+			if( !uniqueid || uniqueid.match(/^(ms_)/) )
+			{
+				uniqueid = '__tempUniqueId_' + String(window.__tempUniqueId__++);
+				$(this).attr('uniqueid', uniqueid);
+			}
+			var separate = $(this).attr('separate');
+			autoLayout2(uniqueid, separate);
+		});
+	}
+	catch (err)
+	{
+		alert('setAutoLayout2 : '+err.message);
+	}
+}
+
+/**
+ * 2011/06/09 19:38:08 김준
+ * 자동레이아웃에서 사용하는 함수
+ */
+function autoLayout2(uniqueid, separate)
+{
+	try
+	{
+		var separate = separate || '';
+
+		if( $('*[uniqueid="'+uniqueid+'"]').children().length<2 ) return false;
+		if( !$('*[uniqueid="'+uniqueid+'"]').hasClass('region') ) $('*[uniqueid="'+uniqueid+'"]').addClass('region');
+
+		var topWidth = $('*[uniqueid="'+uniqueid+'"]').parent().width() - 0; // 필수기호,indent 들어가는 위치를 고려 안함
+		$('*[uniqueid="'+uniqueid+'"]').width(topWidth);
+
+		if( topWidth>0 )
+		{
+			var maxWidth = null;
+			var pMaxWidth = null;
+			$('*[uniqueid="'+uniqueid+'"]').children().each(function()
+			{
+				if( !$(this).hasClass('region') ) $(this).addClass('region');
+
+				var w = $(this).width() + 0;	//	element size fix
+				if( maxWidth==null ) maxWidth = w;
+				else if( maxWidth<w ) maxWidth = w;
+			});
+
+			if( maxWidth )
+			{
+				var colNum = null;
+				var temp = 1;
+				while (colNum == null)
+				{
+					if( Number(maxWidth) * temp >= topWidth )
+					{
+						colNum = temp - 1;
+						break;
+					}
+					temp++;
+				}
+
+				if( colNum >= 1 )
+				{
+					if( $('*[uniqueid="' + uniqueid + '"]').children().length < colNum ) colNum = $('*[uniqueid="' + uniqueid + '"]').children().length;
+					var colWidth = Math.floor(Number(topWidth / colNum));
+					if( $('html').hasClass('js') )
+					{
+						colWidth -= 0;	//	element size fix
+					}
+					if( colWidth<maxWidth )
+					{
+						colWidth = maxWidth;
+					}
+
+					$('*[uniqueid="' + uniqueid + '"]').children().each(function()
+					{
+						$(this).html($(this).html().replace(eval('/' + separate + '$/i'), ''));
+						$(this).width(colWidth).css({'word-break':'break-all'});
+					});
+				}
+			}
+
+		}	//	end of if( topWidth>0 )
+
+	}	//	end of try
+	catch (err)
+	{
+		alert('autoLayout2 : '+ err.message+uniqueid);
+	}
+}	//	end of function autoLayout2(uniqueid, separate)
+
+function setAutoLayout3(arg)
+{
+	arg = arg||'.autolayout3';
+	try
+	{
+		$(arg).each(function()
+		{
+//			$(this).css('width', '97%');
+			var uniqueid = $(this).attr('uniqueid');
+			if( !uniqueid || uniqueid.match(/^(ms_)/) )
+			{
+				uniqueid = '__tempUniqueId_' + String(window.__tempUniqueId__++);
+				$(this).attr('uniqueid', uniqueid);
+			}
+			var separate = $(this).attr('separate');
+			autoLayout(uniqueid, separate);
+		});
+	}
+	catch (err)
+	{
+		alert('setAutoLayout3 : '+err.message);
+	}
+}
+
+/**
+ * 2011/06/09 19:38:08 김준
+ * 자동레이아웃에서 사용하는 함수
+ */
+function autoLayout3(uniqueid, separate)
+{
+	try
+	{
+		var separate = separate || '';
+
+		if( $('*[uniqueid="'+uniqueid+'"]').children().length<2 ) return false;
+		if( !$('*[uniqueid="'+uniqueid+'"]').hasClass('region') ) $('*[uniqueid="'+uniqueid+'"]').addClass('region');
+
+		var topWidth = $('*[uniqueid="'+uniqueid+'"]').parent().parent().width() - 0; // 필수기호,indent 들어가는 위치를 고려 안함
+		$('*[uniqueid="'+uniqueid+'"]').width(topWidth);
+
+		if( topWidth>0 )
+		{
+			var maxWidth = null;
+			var pMaxWidth = null;
+			$('*[uniqueid="'+uniqueid+'"]').children().each(function()
+			{
+				if( !$(this).hasClass('region') ) $(this).addClass('region');
+
+				var w = $(this).width() + 0;	//	element size fix
+				if( maxWidth==null ) maxWidth = w;
+				else if( maxWidth<w ) maxWidth = w;
+			});
+
+			if( maxWidth )
+			{
+				var colNum = null;
+				var temp = 1;
+				while (colNum == null)
+				{
+					if( Number(maxWidth) * temp >= topWidth )
+					{
+						colNum = temp - 1;
+						break;
+					}
+					temp++;
+				}
+
+				if( colNum >= 1 )
+				{
+					if( $('*[uniqueid="' + uniqueid + '"]').children().length < colNum ) colNum = $('*[uniqueid="' + uniqueid + '"]').children().length;
+					var colWidth = Math.floor(Number(topWidth / colNum));
+					if( $('html').hasClass('js') )
+					{
+						colWidth -= 0;	//	element size fix
+					}
+					if( colWidth<maxWidth )
+					{
+						colWidth = maxWidth;
+					}
+
+					$('*[uniqueid="' + uniqueid + '"]').children().each(function()
+					{
+						$(this).html($(this).html().replace(eval('/' + separate + '$/i'), ''));
+						$(this).width(colWidth).css({'word-break':'break-all'});
+					});
+				}
+			}
+
+		}	//	end of if( topWidth>0 )
+
+	}	//	end of try
+	catch (err)
+	{
+		alert('autoLayout3 : '+ err.message+uniqueid);
+	}
+}	//	end of function autoLayout3(uniqueid, separate)
+
+function toggleIconRed()
+{
+	$('.ui-icon').hover(
+		function(){ $(this).css('background-image','url(/image/common/ui-icons_cd0a0a_256x240.png)'); },
+		function(){ $(this).css('background-image','url(/image/common/ui-icons_222222_256x240.png)'); }
+	);
+}
+
+function toDot(a, leng)
+{
+	if( a && a != 0 )
+	{
+		var b = false;
+		var c = '0';
+		if( a < 0 ) b = true;
+		a = Math.abs(a);
+		c = '0.' + String(a);
+		if( String(a).length < leng ) c = '0.' + str_pad(a, leng, '0', 'STR_PAD_LEFT');
+		else if( String(a).length > leng ) c = String(a).substr(0, String(a).length - leng) + '.' + String(a).substr(String(a).length - leng, leng);
+		if( b ) return '-' + c;
+		else return c;
+	}
+	else
+	{
+		return '0';
+	}
+}	//	end of function toDot(a, leng)
+
+function multi()
+{
+	var args = arguments;
+	var argl = args.length;
+	if( argl == 0 )
+	{
+		alert('전달된 인수가 없어 임마');
+		return false;
+	}
+	else if( argl == 1 )
+	{
+		return args[0];
+	}
+	else if( argl == 2 )
+	{
+		var a = args[0];
+		var b = args[1];
+	}
+	else if( argl > 2 )
+	{
+		var tempres = multi(args[0], args[1]);
+		var arg = [ tempres ];
+		for( var temp = 2; temp < argl; temp++ )
+		{
+			arg[arg.length] = args[temp];
+		}
+		return eval('multi(' + arg.join(',') + ');');
+	}
+	var a = String(a).split('.');
+	var b = String(b).split('.');
+	var c = new Array(0, 0, 0, 0);
+	if( a[0] )
+	{
+		if( b[0] ) c[0] = Number(a[0]) * Number(b[0]);
+		if( b[1] ) c[1] = toDot(Number(a[0]) * Number(b[1]), b[1].length);
+	}
+	if( a[1] )
+	{
+		if( b[0] ) c[2] = toDot(Number(a[1]) * Number(b[0]), a[1].length);
+		if( b[1] ) c[3] = toDot(Number(a[1]) * Number(b[1]), String(a[1]).length + String(b[1]).length);
+	}
+	return sum(c[0], c[1], c[2], c[3]);
+}	//	end of function multi()
+
+function sum()
+{
+	var args = arguments;
+	var argl = args.length;
+	if( argl == 0 )
+	{
+		alert('전달된 인수가 없습니다.');
+		return false;
+	}
+	else if( argl == 1 )
+	{
+		return args[0];
+	}
+	else if( argl == 2 )
+	{
+		var a = args[0];
+		var b = args[1];
+	}
+	else if( argl > 2 )
+	{
+		var tempres = sum(args[0], args[1]);
+		var arg = [ tempres ];
+		for( var temp = 2; temp < argl; temp++ )
+		{
+			arg[arg.length] = args[temp];
+		}
+		return eval('sum(' + arg.join(',') + ');');
+	}
+	if( Math.abs(a) < Math.abs(b) )
+	{
+		var temp = a;
+		a = b;
+		b = temp;
+	}
+	var am = a < 0 ? -1 : 1;
+	var bm = b < 0 ? -1 : 1;
+	var a = String(a).split('.');
+	a[0] = String(a[0] || 0).replace('-', '');
+	a[1] = String(a[1] || 0).replace('-', '');
+	var b = String(b).split('.');
+	b[0] = String(b[0] || 0).replace('-', '');
+	b[1] = String(b[1] || 0).replace('-', '');
+	var d = String(a[1]).length > String(b[1]).length ? String(a[1]).length : String(b[1]).length;
+	a[1] = str_pad(a[1], d, '0');
+	b[1] = str_pad(b[1], d, '0');
+	var c = [ 0, 0 ];
+	c[0] = Math.abs(Number(am * a[0]) + Number(bm * b[0]));
+	var tempa1 = a[1].split('');
+	var tempb1 = b[1].split('');
+	var tempc1 = new Array();
+	for( var temp = 0; temp < tempa1.length; temp++ )
+	{
+		if( temp == 0 ) c[0] = Number(c[0]) - 1;
+		else tempc1[temp - 1] = Number(tempc1[temp - 1]) - 1;
+		tempa1[temp] = Number(tempa1[temp]) + 10;
+		tempc1[temp] = Math.abs(Number(am * tempa1[temp]) + Number(bm * tempb1[temp]));
+	}
+	for( var temp = tempc1.length - 1; temp >= 0; temp-- )
+	{
+		if( tempc1[temp] >= 10 )
+		{
+			if( temp == 0 ) c[0] = Number(c[0]) + Number(String(tempc1[temp]).substr(0, 1));
+			else tempc1[temp - 1] = Number(tempc1[temp - 1]) + Number(String(tempc1[temp]).substr(0, 1));
+			tempc1[temp] = Number(String(tempc1[temp]).substr(1, 1));
+		}
+		else if( tempc1[temp] < 0 )
+		{
+			tempc1[temp] = tempc1[temp] + 10;
+			if( temp == 0 ) c[0] = c[0] - 1;
+			else tempc1[temp - 1] = tempc1[temp - 1] - 1;
+		}
+	}
+	var res = am < 0 ? '-' : '';
+	res += String(c[0]);
+	res += '.';
+	res += tempc1.join('');
+	return Number(res);
+}	//	end of function sum()
+
+function sub()
+{
+	var args = arguments;
+	var argl = args.length;
+	if( argl == 0 )
+	{
+		alert('전달된 인수가 없어 임마');
+		return false;
+	}
+	else if( argl == 1 )
+	{
+		return args[0];
+	}
+	else if( argl == 2 )
+	{
+		var a = args[0];
+		var b = args[1];
+	}
+	else if( argl > 2 )
+	{
+		var tempres = sub(args[0], args[1]);
+		var arg = [ tempres ];
+		for( var temp = 2; temp < argl; temp++ )
+		{
+			arg[arg.length] = args[temp];
+		}
+		return eval("sub(" + arg.join(',') + ");");
+	}
+	return sum(a, b * -1);
+}	//	end of function sub()
+
+function makeArray(fix,val,splitText)
+{
+	splitText = splitText||',';
+	var $res = new Array();
+	val = val.split(splitText);
+	for( var temp=0; temp<val.length; temp++ )
+	{
+		$res[$res.length] = fix+''+val[temp];
+	}
+	return $res;
+}	//	end of function makeArray(fix,val,splitText)
+
+function setSession(name, value)
+{
+	ajaxpost(script.session.php, 'L='+encodeURIComponent(name)+'&V='+encodeURIComponent(value));
+}
+
+function getSession(name)
+{
+	var resSession = '';
+	ajaxpost(script.session.php, 'L='+encodeURIComponent(name)+'&M=R', function(d)
+	{
+		resSession = d;
+	});
+	return resSession;
+}
+
+function delSession(name)
+{
+	ajaxpost(script.session.php, 'L='+encodeURIComponent(name)+'&M=D');
+}
+
+function setCookie(name, value, expiresecs)
+{
+	var todayDate=new Date();
+	todayDate.setSeconds(todayDate.getSeconds()+expiresecs);
+	document.cookie = name+"="+escape(value)+"; path=/; expires="+todayDate.toGMTString()+";"
+}	//	end of function setCookie(name, value, expiresecs)
+
+//브라우저의 모든 쿠키 삭제
+//for(var temp=0, csplit=document.cookie.split(';'), clength=csplit.length; temp<clength; temp++){ var a = csplit[temp].split('='); if(!a[0]){ continue; } document.cookie = a[0]+'=;'; }
+
+function delCookie(name)
+{
+	setCookie(name, '', 0);
+}
+
+function getCookie(Name)
+{
+	var search = Name + "=";
+	if(document.cookie.length > 0)
+	{
+		offset = document.cookie.indexOf(search);
+		if( offset != -1 )
+		{
+			offset += search.length;
+			end = document.cookie.indexOf(";", offset);
+			if( end == -1 ) end = document.cookie.length;
+			return unescape(document.cookie.substring(offset, end));
+		}
+	}
+}	//	end of function getCookie(Name)
+
+/**
+ * trim() : 양옆 공백을 제거한다 rtrim() : 문자열의 끝(왼쪽) 공백을 제거한다 ltrim() : 문자열의 시작(오른쪽) 공백을
+ * 제거한다
+ */
+String.prototype.trim = function()
+{
+	return this.replace(/^\s+|\s+$/g, '');
+}
+function trim(str)
+{
+	return str.trim();
+}
+String.prototype.rtrim = function()
+{
+	return this.replace(/\s+$/g, '');
+}
+function rtrim(str)
+{
+	return str.rtrim();
+}
+String.prototype.ltrim = function()
+{
+	return this.replace(/^\s+/g, '');
+}
+function ltrim(str)
+{
+	return str.ltrim();
+}
+
+function str_replace(str, dest, rep)
+{
+	return str.toString().replace(dest, rep);
+}
+
+/**
+ * number_format() PHP의 number_format과 똑같은 효과를 낸다. decimals : 표시할 소수점 자리수(버림으로
+ * 처리됨) dec_point : 소수점 표시단어 thousands_sep : 1000자리 표시단어 ex>
+ * "123456.98765".number_format(4,'.',',');
+ * String("123456.98765").number_format(4); number_format("123456.98765"); ->
+ * 123,456.9876
+ *
+ * 123456.98765.number_format(4); -> 123,456.9876
+ * -123456.98765.number_format(4); -> NaN
+ * Number('-123456.98765').number_format(4); -> -123,456.9876
+ */
+String.prototype.number_format = function(decimals, dec_point, thousands_sep)
+{
+	decimals = decimals || 999;
+	dec_point = dec_point || '.';
+	thousands_sep = thousands_sep || ',';
+	var arr = this.toString().replace(/[^-\.\+\d]/g, '').split(dec_point);
+	if( arr[1] && arr[1].length > 0 ) arr[1] = arr[1].substr(0, decimals);
+	arr[0] = arr[0].replace(/(\d)(?=(?:\d{3})+(?!\d))/g, '$1' + thousands_sep);
+	if( arr[1] && decimals > 0 && arr[1].length > 0 ) return arr[0] + dec_point + arr[1];
+	else return arr[0];
+}
+Number.prototype.number_format = function(decimals, dec_point, thousands_sep)
+{
+	return this.toString().number_format(decimals, dec_point, thousands_sep)
+}
+function number_format(str, decimals, dec_point, thousands_sep)
+{
+	return str.toString(decimals, dec_point, thousands_sep);
+}
+
+/**
+ * htmlspecialchars([quote_style]) 특수 문자를 HTML 엔터티로 변환합니다. quote_style 0:" 만 변환
+ * 1:",' 둘다 변환 2:변환하지 않음
+ */
+String.prototype.htmlspecialchars = function(quote_style)
+{
+	quote_style = quote_style || 0;
+	var t = this.replace(/\&/g, '&amp;');
+	if( quote_style <= 1 ) t = t.replace(/\"/g, '&quot;');
+	if( quote_style == 1 ) t = t.replace(/\'/g, '&#039;');
+	return t.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function htmlspecialchars(str, quote_style)
+{
+	return str.htmlspecialchars(quote_style);
+}
+/**
+ * nl2br() 문자열의 모든 줄바꿈 앞에 HTML 줄바꿈 태그를 삽입합니다.
+ */
+String.prototype.nl2br = function()
+{
+	return this.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n/g, '<br />\n');
+}
+function nl2br(str)
+{
+	return str.nl2br();
+}
+/**
+ * nl2nl() \n를 \\n으로 바꾼다(문자열이 한줄로 만들어진다.)
+ */
+String.prototype.nl2nl = function()
+{
+	return this.replace(/\r\n/g, '\\n').replace(/\r/g, '\\n').replace(/\n/g, '\\n');
+}
+function nl2nl(str)
+{
+	return str.nl2nl();
+}
+/**
+ * strip_tags() 문자열에서 HTML 태그를 제거합니다. <xx yy zz> 처럼 된 것을 제거합니다. 짝을 체크하거나 하지는
+ * 않습니다.
+ */
+String.prototype.strip_tags = function()
+{
+	return this.replace(/<[^>]+[^>]*|\n*>/gm, '');
+}
+function strip_tags(str)
+{
+	return str.strip_tags();
+}
+
+/**
+ * wordwrap() 정지문자를 이용해 주어진 수 만큼의 문자를 래핑한다.
+ */
+String.prototype.wordwrap = function(width, break_str, cut)
+{
+	if( width == null ) width = 75;
+	if( break_str == null ) break_str = "\n";
+	if( cut == null ) cut = 1; // 0이면 마지막에 단어가 걸리면 자른다. 1이면 단어를 밑으로 내린다.
+	var arr = this.split(break_str);
+	var arr2 = new Array();
+	var arr3 = new Array();
+	var temp = ''
+	var ol = '', ne = '', t = '';
+	if( cut == 0 )
+	{
+		var reg = new RegExp('(.{' + width + '})', 'gm');
+		var t = this.replace(reg, '$1\n');
+		return t;
+	}
+	else
+	{
+		for( i = 0, m = arr.length; i < m; i++ )
+		{
+			arr3 = arr[i].split(' ');
+			ne = '';
+			for( j = 0, mj = arr3.length; j < mj; j++ )
+			{
+				if( ne == '' ) ne += arr3[j];
+				else if( ne.length + 1 + arr3[j].length <= width ) ne += ' ' + arr3[j];
+				else arr2.push(ne), ne = arr3[j];
+			}
+			if( ne != '' ) arr2.push(ne);
+		}
+		return arr2.join(break_str);
+	}
+}
+function wordwrap(str, break_str, cut)
+{
+	return str.wordwrap(break_str, cut);
+}
+
+String.prototype.str_pad = function(length, pad_str, pad_type)
+{
+	if( pad_type == null ) pad_type = "STR_PAD_RIGHT"; // STR_PAD_RIGHT,
+	// STR_PAD_LEFT, or
+	// STR_PAD_BOTH
+	if( pad_str == null ) pad_str = " ";
+	if( length == null ) return this;
+	else if( length <= this.length ) return this;
+
+	var padlength = length - this.length;
+	var pretemp = '';
+	var posttemp = '';
+	var pad = new Array();
+
+	while (pad_str != '')
+	{
+		pad[pad.length] = pad_str.substr(0, 1);
+		pad_str = pad_str.substr(1, pad_str.length);
+	}
+
+	var tempindex = 0;
+	while (pretemp.length + posttemp.length < padlength)
+	{
+		if( pad_type == "STR_PAD_RIGHT" ) posttemp += pad[tempindex];
+		else if( pad_type == "STR_PAD_LEFT" ) pretemp += pad[tempindex];
+		else if( pad_type == "STR_PAD_BOTH" ) posttemp += pad[tempindex], pretemp += pad[tempindex];
+		tempindex++;
+		if( tempindex >= pad.length ) tempindex = 0;
+	}
+
+	tempindex = 0;
+	while (pretemp.length + this.length + posttemp.length > length)
+	{
+		if( (pad_type == "STR_PAD_BOTH" && tempindex % 2 == 0) || pad_type != "STR_PAD_BOTH" ) pretemp = pretemp.substr(0, pretemp.length - 1);
+		else if( pad_type == "STR_PAD_BOTH" && tempindex % 2 == 1 ) posttemp = posttemp.substr(0, posttemp.length - 1);
+		tempindex++;
+	}
+
+	return pretemp + this + posttemp;
+}
+function str_pad(str, length, pad_str, pad_type)
+{
+	return str.toString().str_pad(length, pad_str, pad_type);
+}
+
+String.prototype.str_repeat = function(length)
+{
+	var temp = '';
+	while (length)
+	{
+		temp += this;
+		length--;
+	}
+	return temp;
+}
+function str_repeat(str, length)
+{
+	return str.toString().str_repeat(length);
+}
+
+// array str_split ( string string [, int split_length] )
+String.prototype.str_split = function(split_length)
+{
+	if( split_length == null ) split_length = 1;
+	var temp = this;
+	var res = new Array();
+	while (temp)
+	{
+		res[res.length] = temp.substr(0, split_length);
+		temp = temp.substr(split_length, temp.length);
+	}
+	return res;
+}
+function str_split(str, split_length)
+{
+	return str.toString().str_split(split_length);
+}
+
+// Reverse a string (PHP 4, PHP 5)
+// string strrev ( string string )
+String.prototype.strrev = function()
+{
+	var temp = this;
+	var res = '';
+	while (temp)
+	{
+		res += temp.substr(temp.length - 1, 1);
+		temp = temp.substr(0, temp.length - 1);
+	}
+	return res;
+}
+function strrev(str)
+{
+	return str.toString().strrev();
+}
+
+// Find first occurrence of a string (PHP 4, PHP 5)
+// string strstr ( string haystack, string needle )
+String.prototype.strstr = function(needle)
+{
+	if( needle == null ) return false;
+	if( this.indexOf(needle) > -1 ) return this.substr(this.indexOf(needle), this.length);
+}
+function strstr(str, needle)
+{
+	return str.toString().strstr(needle);
+}
+
+// Case-insensitive strstr (PHP 4, PHP 5)
+// string stristr ( string haystack, string needle )
+String.prototype.stristr = function(needle)
+{
+	if( needle == null ) return false;
+	if( this.toLowerCase().indexOf(needle.toLowerCase()) > -1 ) return this.substr(this.toLowerCase().indexOf(needle.toLowerCase()), this.length);
+}
+function stristr(str, needle)
+{
+	return str.toString().stristr(needle);
+}
+
+// Make a string lowercase (PHP 4, PHP 5)
+// string strtolower ( string str )
+String.prototype.strtolower = function()
+{
+	return this.toLowerCase();
+}
+function strtolower(str)
+{
+	return str.toString.strtolower();
+}
+
+// Make a string uppercase (PHP 4, PHP 5)
+// string strtoupper ( string string )
+String.prototype.strtoupper = function()
+{
+	return this.toUpperCase();
+}
+function strtoupper(str)
+{
+	return str.toString.strtoupper();
+}
+
+// Make a string's first character uppercase (PHP 4, PHP 5)
+// string ucfirst ( string str )
+String.prototype.ucfirst = function()
+{
+	return this.substr(0, 1).toUpperCase() + this.substr(1, this.length);
+}
+function ucfirst(str)
+{
+	return str.toString().ucfirst();
+}
+
+// Uppercase the first character of each word in a string (PHP 4, PHP 5)
+// string ucwords ( string str )
+String.prototype.ucwords = function()
+{
+	var temp = this.match(/(\w+)\b/g);
+	var res = new Array();
+	for( var tempindex = 0; tempindex < temp.length; tempindex++ )
+		res[tempindex] = ucfirst(temp[tempindex]);
+	var tempvar = this;
+	for( tempindex = 0; tempindex < temp.length; tempindex++ )
+		tempvar = str_replace(tempvar, temp[tempindex], res[tempindex]);
+	return tempvar;
+}
+function ucwords(str)
+{
+	return str.toString().ucwords();
+}
+
+function is_array(array)
+{
+	if( array == null ) return false;
+	if( array.length == null ) return false;
+	for( var temp in array )
+	{
+		if( !array[temp] ) return false;
+		break; // 하나만 체크
+	}
+	return true;
+}
+
+// Filters elements of an array using a callback function (PHP 4 >= 4.0.6, PHP
+// 5)
+// array array_filter ( array input [, callback callback] )
+function array_filter(array, callback)
+{
+	if( !is_array(array) ) return '';
+	if( callback == null )
+	{
+		callback = function()
+		{
+			if( arguments[0] ) return arguments[0];
+		};
+	}
+	else callback = eval(callback);
+	var tempArray = new Array();
+	for( var temp = 0; temp < array.length; temp++ )
+		if( callback(array[temp]) ) tempArray[temp] = array[temp];
+	return tempArray;
+}
+
+function array_unique(array)
+{
+	if( !is_array(array) ) return [];
+	var tempArray = [];
+	for( var temp = 0; temp < array.length; temp++ )
+	{
+		if( !in_array(array[temp], tempArray) )
+		{
+			tempArray[tempArray.length] = array[temp];
+		}
+	}
+	return tempArray;
+}
+
+// Checks if a value exists in an array (PHP 4, PHP 5)
+// bool in_array ( mixed needle, array haystack [, bool strict] )
+function in_array(str, array, strict)
+{
+	if( strict == null ) strict = false;
+	for( var temp = 0; temp < array.length; temp++ )
+	{
+		if( strict == false && array[temp] == str ) return true;
+		if( strict == true && array[temp] === str ) return true;
+	}
+	return false;
+}
+
+// Computes the difference of arrays (PHP 4 >= 4.0.1, PHP 5)
+// array array_diff ( array array1, array array2 [, array ...] )
+Array.prototype.array_diff = function(array2)
+{
+	var resarray = new Array();
+	for( var temp = 0; temp < this.length; temp++ )
+	{
+		var res = true;
+		for( var temp1 = 0; temp1 < array2.length; temp1++ )
+			if( this[temp] == array2[temp1] ) res = false;
+		if( res == true ) resarray[resarray.length] = this[temp];
+	}
+	return resarray;
+}
+function array_diff(array1, array2)
+{
+	return array1.array_diff(array2);
+}
+
+// Join array elements with a string (PHP 4, PHP 5)
+// string implode ( string glue, array pieces )
+Array.prototype.implode = function(glue)
+{
+	return this.join(glue);
+}
+
+Array.prototype.arrayMatch = function(regExp)
+{
+	regExp = regExp||/^()$/;
+	for( var temp=0; temp<this.length; temp++ )
+	{
+		if( String(this[temp]||'').match(regExp) )
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+function copyToClipBoard(text,func)
+{
+	if( window.clipboardData && window.clipboardData.setData )
+	{
+		if( window.clipboardData.setData('Text', text) )
+		{
+//			alert('[' + text + ']가 복사되었습니다.', func);
+		}
+	}
+	else
+	{
+		alert('복사 기능을 사용할 수 없는 브라우저입니다.');
+	}
+}
+
+function widthFix(aid, aclass)
+{
+	if( !window.maxWidth )
+	{
+		window.maxWidth = {};
+		window.widthFixArr = {};
+	}
+	if( !window.maxWidth[aclass] || window.maxWidth[aclass]<$('#'+aid).width() ) window.maxWidth[aclass] = $('#'+aid).width();
+	if( !window.widthFixArr[aclass] ) window.widthFixArr[aclass] = [];
+	window.widthFixArr[aclass][window.widthFixArr[aclass].length] = aid;
+	for( var temp=0; temp<window.widthFixArr[aclass].length; temp++ )
+	{
+		$('#'+window.widthFixArr[aclass][temp]).width(window.maxWidth[aclass]);
+	}
+}
+
+function textFilter(val, filters)
+{
+	filters = filters?filters.split('|'):[];
+	var resFilters = [];
+	for( var temp=0; temp<filters.length; temp++ )
+	{
+		filters[temp] = String(filters[temp]).toUpperCase().trim();
+		if( filters[temp]=='NON' )
+		{
+			continue;
+		}
+//		else if( filters[temp]=='SPC' )
+//		{
+//			while( val.match(/( |	)/) ) val = val.replace(/( |	)/g,"");
+//			//resFilters.push(' ');
+//		}
+//		else if( filters[temp]=='DPC' )
+//		{
+//			while( val.match(/( |	){2,}/) ) val = val.replace(/( |	){2,}/g," ");
+//			//resFilters.push('  ');
+//		}
+//		else if( filters[temp]=='ENT' )
+//		{
+//			while( val.match(/\r\n/) ) val = val.replace(/\r\n/g,"");
+//			//resFilters.push('\\r\\n|\\n');
+//		}
+//		else if( filters[temp]=='DNT' )
+//		{
+//			while( val.match(/\n( |	)*\n/) ) val = val.replace(/\n( |	)*\n/g,"\n");
+//			while( val.match(/\r\n( |	)*\r\n/) ) val = val.replace(/\r\n( |	)*\r\n/g,"\r\n");
+//			//resFilters.push('\\r\\n\\r\\n|\\n\\n');
+//		}
+		else if( filters[temp]=='SYM' )
+		{
+			resFilters.push('[!-\\/\\:-@\\{-~\^_\\[\\]]');
+		}
+		else if( filters[temp]=='NUM' )
+		{
+			resFilters.push('[0-9]');
+		}
+		else if( filters[temp]=='KOR1' )
+		{
+			resFilters.push('['
+							+String.fromCharCode(0x1100)+'-'+String.fromCharCode(0x11FF)
+							+']');
+		}
+		else if( filters[temp]=='KOR2' )
+		{
+			resFilters.push('['
+							+String.fromCharCode(0x3130)+'-'+String.fromCharCode(0x318F)
+							+']');
+		}
+		else if( filters[temp]=='KOR3' )
+		{
+			resFilters.push('['
+							+String.fromCharCode(0xAC00)+'-'+String.fromCharCode(0xD7AF)
+							+']');
+		}
+		else if( filters[temp]=='ENG' )
+		{
+			resFilters.push('[a-zA-Z]');
+		}
+		else if( filters[temp]=='CHN' )
+		{
+			resFilters.push('['+String.fromCharCode(0x4E00)+'-'+String.fromCharCode(0x9FBF)
+							+String.fromCharCode(0x3400)+'-'+String.fromCharCode(0x4DBF)
+							//+String.fromCharCode(0x020000)+'-'+String.fromCharCode(0x02A6DF)//한중일 공용 한자 확장B 포함안시킴(보통 사용안됨)
+							+String.fromCharCode(0xF900)+'-'+String.fromCharCode(0xFAFF)
+							+String.fromCharCode(0x3190)+'-'+String.fromCharCode(0x319F)
+							+String.fromCharCode(0x2E80)+'-'+String.fromCharCode(0x2EFF) //CJK Radicals (부수?)
+							+String.fromCharCode(0x2F00)+'-'+String.fromCharCode(0x2FDF) //KangXi Radicals
+							+String.fromCharCode(0x31C0)+'-'+String.fromCharCode(0x31EF)
+							+']');
+		}
+		else if( filters[temp]=='JPN' )
+		{
+			resFilters.push('['+String.fromCharCode(0x3040)+'-'+String.fromCharCode(0x309F)
+								+String.fromCharCode(0x30A0)+'-'+String.fromCharCode(0x30FF)
+								+String.fromCharCode(0x31F0)+'-'+String.fromCharCode(0x31FF)
+							+']');
+		}
+	}
+
+	val = val.trim();
+	var originalVal = val;
+	if( resFilters.length>0 )
+	{
+		while( val.match(new RegExp(resFilters.join('|'))) )
+		{
+			val = val.replace(new RegExp(resFilters.join('|'),'g'),'');
+		}
+	}
+	if( in_array('DPC',filters) )
+	{
+		while( val.match(/( |	){2,}/) ) val = val.replace(/( |	){2,}/g," ");
+		//resFilters.push('  ');
+	}
+	if( in_array('SPC',filters) )
+	{
+		while( val.match(/( |	)/) ) val = val.replace(/( |	)/g,"");
+		//resFilters.push(' ');
+	}
+	if( in_array('DNT',filters) )
+	{
+		while( val.match(/\n( |	)*\n/) ) val = val.replace(/\n( |	)*\n/g,"\n");
+		while( val.match(/\r\n( |	)*\r\n/) ) val = val.replace(/\r\n( |	)*\r\n/g,"\r\n");
+		//resFilters.push('\\r\\n\\r\\n|\\n\\n');
+	}
+	if( in_array('ENT',filters) )
+	{
+		while( val.match(/\r\n/) ) val = val.replace(/\r\n/g,"");
+		//resFilters.push('\\r\\n|\\n');
+	}
+	val = val.trim();
+	if( originalVal!=val )
+	{
+		alert("입력하신 내용중에 허용되지 않는 문자가 포함되어 내용이 임의로 변경되었습니다.<br />입력하신 내용을 반드시 다시 확인하시기 바랍니다.");
+	}
+	return val;
+}
+
+function textLengthCheck(objName, val, limitType, limitView, limitLength, enterLength, spaceLength, rep)
+{
+	if( limitLength==undefined ) return val;
+	if( enterLength==undefined ) enterLength = 1;
+	if( spaceLength==undefined ) spaceLength = 1;
+	if( rep==undefined ) rep = true;
+
+	try
+	{
+		var obj = $('#'+objName);
+
+		var max = Number(limitLength||0);
+		if(max<=0) return val;
+
+		//	길이제한 타입
+		var lt = (limitType||'LENGTH').toUpperCase();	//	LENGTH || BYTE
+
+		//	enter 당 바이트, 혹은 길이
+		var eb = Number(enterLength||2);	//	0 || 1 || 2
+
+		//	space 당 바이트, 혹은 길이
+		var sb = Number(spaceLength||1);	//	0 || 1
+
+		//	space 갯수
+		var ls = (val.match(/( |	)/g) || new Array()).length * sb;
+
+		//	enter 갯수
+		/**
+		 * 2011/11/18 10:18:23 김준
+		 * var ln = val.match(/(\r\n)/g) || new Array();
+		 * IE9에서 호환성보기를 하지 않은 상태에서 \r 을 캐치하지 못해서 갯수를 세는것에서는 \r을 제외
+		**/
+		var ln = (val.match(/(\n)/g) || new Array()).length * eb;
+
+		//	space, enter, tab 아닌 글자 갯수
+		var la = val.match(/([^\s])/g) || new Array();
+
+		if( lt=='LENGTH' )
+		{
+			la = la.length;
+		}
+		else if( lt=='BYTE' )
+		{
+			var templa = 0;
+			for( var temp=0; temp<la.length; temp++ )
+			{
+				try
+				{
+					var encoded = encodeURIComponent(la[temp]);
+				}
+				catch(err)
+				{
+					var encoded = '%';
+				}
+				if( encoded==la[temp] || (encoded.match(/%/g)||new Array()).length==1 )
+				{
+					templa += 1;
+				}
+				else
+				{
+					//	euc-kr 인코딩으로 계산
+					templa += 2;
+				}
+			}
+			la = templa;
+		}
+
+		var res = la + ls + ln;
+		if( rep && res>max )
+		{
+			while( res>max )
+			{
+				val = val.substr(0,val.length-1);
+				res = textLengthCheck(objName, val, limitType, limitView, limitLength, enterLength, spaceLength, false);
+			}
+			obj.val(val);
+			if( window.alert_TextLength ) alert_TextLength(objName);
+		}
+
+		$('#id_'+objName+'_len').val(res);
+		$('#'+objName+'_lenText').text(res);
+		return res;
+	}
+	catch(err)
+	{
+		return false;
+	}
+
+}
+
+function chk_TextLength()
+{
+	try
+	{
+		var obj = event.srcElement;
+		var max = obj.getAttribute('maximumlength');
+		max = Number(max) || 0;
+		if(max<=0) return;
+		var lt = (obj.getAttribute('limittype')||'LENGTH').toUpperCase();	//	LENGTH || BYTE
+		var s = (obj.getAttribute('space')||'FALSE').toUpperCase();	//	TRUE || FALSE
+		var e = (obj.getAttribute('enter')||'FALSE').toUpperCase();	//	TRUE || FALSE
+		var eb = (obj.getAttribute('enterbyte')||'2');	//	1 || 2
+		eb = Number(eb) || 2;
+		var sr = (obj.getAttribute('spaceremove')||'FALSE').toUpperCase();	//	TRUE || FALSE
+		var er = (obj.getAttribute('enterremove')||'FALSE').toUpperCase();	//	TRUE || FALSE
+		var dcs = String(obj.getAttribute('denychar')||'');	//
+		var ne = (obj.getAttribute('noenter')||'FALSE').toUpperCase();	//	TRUE || FALSE
+		var ns = (obj.getAttribute('nospace')||'FALSE').toUpperCase();	//	TRUE || FALSE
+
+		var tempobj = document.getElementById('temptextarea');
+		if(!tempobj)
+		{
+//			document.body.appendChild(document.createElement('<textarea id="temptextarea"></textarea>'));
+			/**
+			 * 2011/07/11 18:24:36 김준
+			 * 위의 내용이 아래의 내용으로 변경
+			**/
+			var textarea1 = document.createElement('textarea');
+			textarea1.setAttribute('id','temptextarea');
+			document.body.appendChild(textarea1);
+			tempobj = document.getElementById('temptextarea');
+		}
+		tempobj.value = obj.value;
+
+		/**
+		 * 2011/07/14 11:29:12 김준
+		 * 데이터 공통처리에서 하는 일이 바이트 수 계산에 맞지 않기 때문에 미리 변환해줌
+		**/
+		if( tempobj.value.match(/(\|)/) ) obj.value = tempobj.value = tempobj.value.replace(/(\|)/g,'│');
+		if( tempobj.value.match(/(@@)/) ) obj.value = tempobj.value = tempobj.value.replace(/(@@)/g,' ');
+
+		if(er=='TRUE')
+		{
+			if(tempobj.value.match(/^(\r\n)/)) obj.value = tempobj.value = tempobj.value.replace(/^(\r\n)/,'');
+			while(tempobj.value.match(/(\r\n\r\n)/)) obj.value = tempobj.value = tempobj.value.replace(/(\r\n\r\n)/,'\r\n');
+		}
+
+		if(ne=='TRUE')
+		{
+			while(tempobj.value.match(/(\r\n)/)) obj.value = tempobj.value = tempobj.value.replace(/(\r\n)/,' ');
+		}
+
+		if(sr=='TRUE')
+		{
+			while(tempobj.value.match(/(  )/)) obj.value = tempobj.value = tempobj.value.replace(/(  )/,' ');
+			while(tempobj.value.match(/(		)/)) obj.value = tempobj.value = tempobj.value.replace(/(		)/,'	');
+		}
+
+		if(ns=='TRUE')
+		{
+			while(tempobj.value.match(/( )/)) obj.value = tempobj.value = tempobj.value.replace(/( )/,'');
+			while(tempobj.value.match(/(	)/)) obj.value = tempobj.value = tempobj.value.replace(/(	)/,'');
+		}
+
+		if( dcs!='' )
+		{
+			var mat = new RegExp('['+dcs.replace('\\','\\\\').replace('\/','\\\/').replace('\[','\\\[').replace('\]','\\\]').replace('\-','\\\-')+']');
+			while( mat.test(tempobj.value) )
+			{
+				obj.value = tempobj.value = tempobj.value.replace(mat,'');
+			}
+		}
+
+		var ls = tempobj.value.match(/( |	)/g) || new Array();
+		ls = ls.length;
+		/**
+		 * 2011/11/18 10:18:23 김준
+		 * var ln = tempobj.value.match(/(\r\n)/g) || new Array();
+		 * IE9에서 호환성보기를 하지 않은 상태에서 \r 을 캐치하지 못해서 갯수를 세는것에서는 \r을 제외
+		**/
+		var ln = tempobj.value.match(/(\n)/g) || new Array();
+		ln = ln.length * eb;
+		var la = tempobj.value.match(/([^\s])/g) || new Array();
+
+		if( lt=='LENGTH' )
+		{
+			la = la.length;
+		}
+		else if( lt=='BYTE' )
+		{
+			var templa = 0;
+			for( var temp=0; temp<la.length; temp++ )
+			{
+				try
+				{
+					var encoded = encodeURIComponent(la[temp]);
+				}
+				catch(err)
+				{
+					var encoded = '%';
+				}
+				if( encoded==la[temp] || (encoded.match(/%/g)||new Array()).length==1 )
+				{
+					templa += 1;
+				}
+				else
+				{
+					templa += 2;
+				}
+			}
+			la = templa;
+		}
+
+		var res = la;
+		if( s=='TRUE' ) res += ls;
+		if( e=='TRUE' ) res += ln;
+
+		if( res>max )
+		{
+			var val = '';
+			var res = 0;
+			var la = tempobj.value;
+			for( var temp=0; temp<la.length; temp++ )
+			{
+				if( lt=='LENGTH' )
+				{
+					val += la.substr(temp,1);
+					if( la.substr(temp,1).match(/^( |	)$/) && s=='TRUE' )
+					{
+						res++;
+					}
+					else if( la.substr(temp,1).match(/^( |	)$/) && s=='FALSE' )
+					{
+					}
+					else if( la.substr(temp,2).match(/^(\r\n)$/) && e=='TRUE' )
+					{
+						temp++;
+						res += (1 * eb);
+					}
+					else if( la.substr(temp,2).match(/^(\r\n)$/) && e=='FALSE' )
+					{
+						temp++;
+					}
+					else
+					{
+						res++;
+					}
+				}
+				else if( lt=='BYTE' )
+				{
+					val += la.substr(temp,1);
+					try
+					{
+						var encoded = encodeURIComponent(la.substr(temp,1));
+					}
+					catch(err)
+					{
+						var encoded = '%';
+					}
+					if( la.substr(temp,1).match(/^( |	)$/) && s=='TRUE' )
+					{
+						res++;
+					}
+					else if( la.substr(temp,1).match(/^( |	)$/) && s=='FALSE' )
+					{
+					}
+					else if( la.substr(temp,2).match(/^(\r\n)$/) && e=='TRUE' )
+					{
+						temp++;
+						res += (1 * eb);
+					}
+					else if( la.substr(temp,2).match(/^(\r\n)$/) && e=='FALSE' )
+					{
+						temp++;
+					}
+					else if( encoded==la.substr(temp,1) || (encoded.match(/%/g)||new Array()).length==1 )
+					{
+						res += 1;
+					}
+					else
+					{
+						res += 2;
+					}
+				}
+
+				if(res==max)
+				{
+					break;
+				}
+				else if(res>max)
+				{
+					try
+					{
+						var encoded = encodeURIComponent(val.substr(val.length-1,1));
+					}
+					catch(err)
+					{
+						var encoded = '%';
+					}
+					if( encoded==val.substr(val.length-1,1) || (encoded.match(/%/g)||new Array()).length==1 )
+					{
+						res -= 1;
+					}
+					else
+					{
+						res -= 2;
+					}
+					val = val.substr(0,val.length-1);
+					break;
+				}
+			}
+			if( window.alert_TextLength )
+			{
+				if( window.alert_do==true )
+				{
+					window.alert_do = false;
+				}
+				else
+				{
+					window.alert_do = true;
+					window.alert_TextLength(obj.name);
+				}
+			}
+			tempobj.value = val;
+			obj.value = obj.value;
+			obj.blur();
+			obj.focus();
+			obj.value = tempobj.value;
+		}
+
+		tempobj.value = '';
+		document.body.removeChild(tempobj);
+
+		return res;
+	}
+	catch(err)
+	{
+//		for( var a in err )
+//		{
+//			alert(a+';'+err[a]);
+//		}
+//		alert(err.message);
+		return false;
+	}
+	finally
+	{
+		var tempobj = document.getElementById('temptextarea');
+		if( tempobj ) document.body.removeChild(tempobj);
+	}
+
+//	obj.blur();
+}
+
+function textKick(val, kickValue)
+{
+	kickValue = (kickValue?kickValue:'').split(',');
+	var reskickValue = [];
+	for( var temp=0; temp<kickValue.length; temp++ )
+	{
+		reskickValue.push(String(kickValue[temp]).trim());
+	}
+	if( reskickValue.length>0 ) return val.replace(new RegExp(reskickValue.join('|'),'ig'),'');
+	else return val;
+}
+
+function base64_encode(str)
+{
+	ajaxpost(script.base64encode.php, 'str='+encodeURIComponent(str), function(d)
+	{
+		window.d = d;
+	});
+	return d;
+}
+
+function isDevServer($arg)
+{
+	return String($arg||document.location.host).match(/^(piedevlcl|piedev)\./)? true:false;
+}
+
+function needSpanRegionFix()
+{
+	$('#FlowDocument').find('.needSpan').each(function()
+	{
+		var $needRegion = $(this).parent();
+		var $nextRegion = $needRegion.next('.region');
+		if( $nextRegion.width()==$needRegion.parent().width() )
+		{
+			$nextRegion.width($nextRegion.width()-$needRegion.width()-$nextRegion.css('border-left-width').replace('px','')-$nextRegion.css('border-right-width').replace('px','')-2);
+		}
+	});
+}
+
+window.resizeTo = function(w,h){
+	var winwidth = Number(w);
+	var winheight = Number(h);
+	var docwidth = document.documentElement? document.documentElement.clientWidth:document.body.clientWidth;
+	var docheight = document.documentElement? document.documentElement.clientHeight:document.body.clientHeight;
+	if( (typeof window.resizeBy)!='undefined' ) window.resizeBy(winwidth-docwidth, winheight-docheight);
+	return;
+}
+
+function getBound(obj)
+{
+	var ret = {};
+	if( obj.getBoundingClientRect )
+	{
+		var rect = obj.getBoundingClientRect();
+		ret.left = rect.left + (document.documentElement.scrollLeft || document.body.scrollLeft) +(navigator.userAgent.toLowerCase().indexOf('msie')!=-1?0:2);  //  ie기준 여백 생성
+		ret.top = rect.top + (document.documentElement.scrollTop || document.body.scrollTop) +(navigator.userAgent.toLowerCase().indexOf('msie')!=-1?0:2);  //  ie기준 여백 생성
+		ret.width = rect.right - rect.left;
+		ret.height = rect.bottom - rect.top +1; //  moz 기준 보정
+	}
+	else if( document.getBoxObjectFor ) //  gecko
+	{
+		var box = document.getBoxObjectFor(obj);
+		ret.left = box.x;
+		ret.top = box.y;
+		ret.width = box.width;
+		ret.height = box.height;
+	}
+	else
+	{
+		ret.left = obj.offsetLeft;
+		ret.top = obj.offsetTop;
+		ret.width = obj.offsetWidth;
+		ret.height = obj.offsetHeight  + 3;  // +3 = Moz 기준 보정
+
+		var parent = obj.offsetParent;
+		if( parent!=obj )
+		{
+			while( parent )
+			{
+				ret.left += parent.offsetLeft;
+				ret.top += parent.offsetTop;
+				parent = parent.offsetParent;
+			}
+		}
+
+		// 오페라와 사파리의 'absolute' postion의 경우 body의 offsetTop으로 보정
+		var ua = navigator.userAgent.toLowerCase();
+		if( ua.indexOf('opera')!=-1 || ( ua.indexOf('safari')!=-1 && obj.style.position=='absolute' ) )
+		{
+			ret.top -= document.body.offsetTop;
+		}
+	}
+	return ret;
+
+} //  end of function getBound(obj)
+
+function sendSMS(servicecd, to, msg, from)
+{
+	from = from || '15888988';
+
+	var params = [];
+	params.push('to='+to);
+	params.push('msg='+msg);
+	params.push('servicecd='+servicecd);
+	params.push('from='+from);
+
+	var res = '';
+	ajaxpost(script.sms.php, params.join('&'), function(d)
+	{
+		res = d;
+	});
+	return res;
+}
+
+function jQueryObj(arg,arg1,arg2)
+{
+	if( arg2==undefined || typeof arg2=='undefined' ) $res = jQuery('['+arg+'="'+arg1+'"]');
+	else $res = jQuery('['+arg+'="'+arg1+'"]:'+arg2);
+	return $res;
+}
+
+function winopen($url, $data, winName, width, height, attr)
+{
+	if( !$data )	$data = '';
+	if( !winName )	winName = 'newWin';
+	if( !attr )	attr = 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=1,';
+	else if( !attr.match(/,$/) )	attr = attr+',';
+	if( !width )	width = '600';
+	if( !height )	height = '500';
+
+	return send_getform($url, $data, winName, attr+'width='+width+',height='+height);
+}
+
+function send_getform($url, $data, winName, features)
+{
+	$('#posttempform').remove();
+	$('body').append('<form action="'+$url+'" id="posttempform" method="get"></form>');
+
+	if( $data )
+	{
+		var $datas = $data.split('&');
+		for( var temp=0; temp<$datas.length; temp++ )
+		{
+			var $d = $datas[temp].split('=');
+			$('#posttempform').append('<input type="hidden" name="'+$d[0]+'" value="'+$d[1]+'"/>');
+		}
+	}
+
+	var popwin = null;
+	if( winName && String(typeof winName).toLowerCase()=='string' && !String(winName).match(/^(parent|self|opener|top)$/) )
+	{
+		if( $('#id_'+getWinName(winName)).length )
+		{
+			$('#id_'+getWinName(winName)).remove();
+		}
+		var attrs = {};
+		if( !!features )
+		{
+			features = features.split(',');
+			for( var temp=0; temp<features.length; temp++ )
+			{
+				var tempAttr = features[temp].split('=');
+				attrs[tempAttr[0]] = tempAttr[1];
+			}
+		}
+
+		$('<div style="display:none; width:'+attrs['width']+'; height:'+attrs['height']+';" class="dialog_popWindow" id="id_'+getWinName(winName)+'" title="'+winName+'"><iframe src="about:blank" frameborder="0" width="100%" height="100%" name="'+winName+'"></iframe></div>').dialog({
+			bgiframe:false,autoOpen:true,modal:true,resizable:(attrs['resizable']=='no'?false:true),width:Number(attrs['width'])+15,height:Number(attrs['height'])+70
+			,open:function()
+			{
+				$('body').css('overflow','hidden').attr('scroll','no');
+			}
+			,close:function()
+			{
+				try
+				{
+					if( document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck ) document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck(winName);
+
+				}
+				catch(err){}
+				if( window.postCloseCheck ) window.postCloseCheck(winName);
+				$('body').css('overflow','visible').attr('scroll','auto');
+//				$('#id_'+getWinName(winName)).remove();
+			}
+			,beforeClose:function(evt, ui)
+			{
+				try
+				{
+					if( document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck ) return document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck(winName, evt, ui);
+
+				}
+				catch(err){}
+				if( window.beforeCloseCheck ) return window.beforeCloseCheck(winName, evt, ui);
+			}
+		});	// end of $('#dialog_formset').dialog({
+
+		$('#posttempform').attr('target',winName);
+	}
+	else if( winName && String(winName).match(/^(parent|self|opener|top)$/) )
+	{
+		$('#posttempform').attr('target',winName);
+	}
+	$('#posttempform').submit();
+	$('#posttempform').remove();
+	return popwin;
+}

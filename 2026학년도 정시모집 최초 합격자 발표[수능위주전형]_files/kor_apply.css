@@ -1,0 +1,51 @@
+.process input[type=image]{vertical-align:middle;}
+
+/*--20150604*/
+.tongHed{overflow:hidden;width:100%;margin-bottom:2px;padding-top:20px;}
+.tong_tab{overflow:hidden;float:left;}
+.tong_tab li{float:left;height:34px;}
+.tong_tab li img{margin-top:0;}
+.tong_tab li.active img{margin-top:-34px}
+.tongHed p{float:right;padding-top:14px;padding-right:22px;color:#565656}
+.tongHed p span{color:#ff7f01;font-weight:bold;}
+
+.tongCont{position:relative;border:solid 1px #9a9a9a;padding:25px 0 25px 27px;margin:0}
+.tongCont p{padding:0 0 0 21px;background:url(/css/img/tong_bg03.png) no-repeat 0 4px}
+.tongCont .redBtn,
+.tongCont .blueBtn{position:absolute;top:50%;right:23px;margin-top:-15px;}
+.tongCont .redBtn2,
+.tongCont .blueBtn2{position:absolute;top:50%;right:23px;margin-top:-25px;}
+.tongCont .redBtn{display:inline-block;padding:0 31px 0 0;height:30px;background:url(/css/img/redBtn_bg02.png) no-repeat right 0;cursor:pointer}
+.tongCont .redBtn span{display:inline-block;height:30px;padding:0 0 0 14px;line-height:35px;*line-height:33px;background:url(/css/img/redBtn_bg01.png) no-repeat left 0;color:#fff555;}
+.tongCont .redBtn2{display:inline-block;padding:0 31px 0 0;height:50px;background:url(/css/img/redBtn2_bg02.png) no-repeat right 0;cursor:pointer}
+.tongCont .redBtn2 span{display:inline-block;height:39px;padding:11px 0 0 14px;line-height:135%;background:url(/css/img/redBtn2_bg01.png) no-repeat left 0;color:#fff555;}
+.tongCont .blueBtn{display:inline-block;padding:0 31px 0 0;height:30px;background:url(/css/img/blueBtn_bg02.png) no-repeat right 0;cursor:pointer}
+.tongCont .blueBtn span{display:inline-block;height:30px;padding:0 0 0 14px;line-height:35px;*line-height:33px;background:url(/css/img/blueBtn_bg01.png) no-repeat left 0;color:#fff;}
+.tongCont .blueBtn2{display:inline-block;padding:0 31px 0 0;height:50px;background:url(/css/img/blueBtn2_bg02.png) no-repeat right 0;cursor:pointer}
+.tongCont .blueBtn2 span{display:inline-block;height:39px;padding:11px 0 0 14px;line-height:135%;background:url(/css/img/blueBtn2_bg01.png) no-repeat left 0;color:#fff;}
+/**20150609*/
+
+.tongPop{min-width:360px;background:#fff url(/css/img/tong_bg01.png) repeat-x 0 0;border:solid 1px #474747;border-top:0;padding:0;margin:0}
+.tongPop h1{padding:0 0 0 48px;height:48px;background:url(/css/img/tong_bg02.png) no-repeat 18px center;font:18px/48px 'Malgun Gothic';color:#fff}
+.tongPop .cont{padding:35px 55px 0;text-align:;}
+.tongPop dl{background:#f0f0f0;padding:15px 28px 10px;margin:20px 0 0;text-align:left;}
+.tongPop dl dt{background:url(/css/img/tong_dt_bg.png) no-repeat 0 0;padding:0 0 0 22px;margin-bottom:4px;font-weight:bold;}
+.tongPop dl dd{padding-left:20px;color:#565656;}
+
+.tongPop .big{font:17px/23px 'Malgun Gothic';margin-bottom:8px;letter-spacing:-1px;color:#000}
+.tongPop .tongClose{position:absolute;top:13px;right:17px}
+
+.tongPop .btnArea{margin:25px 0 30px;text-align:center;}
+.tongPop .whiteBtn{display:inline-block;padding:0 20px;height:27px;line-height:31px;*line-height:29px;color:#555;border:solid 1px #ccc;background:#fff; cursor:pointer;}
+.tongPop  .redBtn{display:inline-block;padding:0 20px;height:27px;line-height:31px;*line-height:29px;color:#fff;border:solid 1px #c73127;background:#c73127; cursor:pointer;}
+
+.red{color:#c8382d;}
+.blue{color:#1d2675;}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+.tongCont .redBtn span{line-height:33px;}
+.tongCont .blueBtn span{line-height:33px;}
+.tongPop .whiteBtn{line-height:29px;} 
+.tongPop  .redBtn{line-height:29px;}
+}
+/*--/20150604*/

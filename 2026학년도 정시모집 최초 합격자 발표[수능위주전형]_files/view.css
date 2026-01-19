@@ -1,0 +1,22 @@
+#DIV_ZEROPAY_ALERT_BG {
+	background-color:gray; filter:Alpha(Opacity=70); position:absolute; top:0; left:0; z-index:1001;
+	width: 100vw; height: 100vh;
+}
+#DIV_ZEROPAY_ALERT {
+	position:absolute; top:0; left:0; z-index:1002;
+	width: 100vw; height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+#DIV_ZEROPAY_ALERT_CONTENTS {
+	/* position:relative; */
+	/* width:70%; margin:20% auto; */
+	margin: 0;
+}
+
+a.btn {
+	display: inline-block;
+	height: 25px;
+	margin-bottom: 2px;
+}

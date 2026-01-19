@@ -1,0 +1,146 @@
+jQuery(function()
+{
+	// 0원 결제 안내
+	jQuery("#DIV_ZEROPAY_ALERT_CONTENTS").outerWidth(jQuery("#wrapcontents").innerWidth());
+
+
+	//오즈 출력물
+	$("a[id^=id_ozprint_]").on('click', function() {
+		var title = $('span', this).text();
+		var arg = $(this).attr('data-param-arg');
+		var attr = 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=1,';
+		var width = $(this).attr('winwidth');
+		var height = $(this).attr('winheight');
+		window.open(arg, title, attr+'width='+width+',height='+height );
+		return false;
+	});
+});
+
+function alertZeroPay()
+{
+	$("#DIV_ZEROPAY_ALERT_BG, #DIV_ZEROPAY_ALERT").toggle();
+}
+
+function requestZeroPay(obj)
+{
+	winpost
+	(
+		'/certify/'+jsft_getBinarycd()+'/index/'+jQuery(obj).attr('data-param-arg'),
+		'',
+		'본인인증',
+		600,
+		470,
+		"toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no,loadhidden=yes"
+	);
+	var $tempwin = jQuery('#id_'+getWinName('본인인증')).dialog();
+	var $bgcolor = jQuery(obj).attr('data-param-color');
+	$tempwin.parent().css('background-color',$bgcolor);
+	$tempwin.parent().find('.ui-dialog-titlebar').css('background-color',$bgcolor).css('border','none');
+	$tempwin.css('background-color',$bgcolor).css('overflow','hidden');
+	$("#DIV_ZEROPAY_ALERT_BG, #DIV_ZEROPAY_ALERT").toggle();
+	$tempwin.parent().find('.ui-widget-header > .ui-dialog-titlebar-close').css({'margin':'0','top':'7px','right':'7px','position':'absolute','border':'none !important'});
+	$tempwin.parent().find('.ui-widget-header > .ui-dialog-titlebar-close > .ui-icon-closethick').css({'background-image':'url("/image/common/i_close.png")','background-position':'0 0','width':'20px','height':'20px'});
+	$tempwin.parent().find('.ui-widget-header > a.ui-dialog-titlebar-close').removeClass('ui-dialog-titlebar-close ui-corner-all').mouseover(function(){$(this).css('border','none');});
+	$tempwin.parent().find('.ui-widget-header > .ui-dialog-title').css({'color':'white','font-size':'14px','line-height':'16px'});
+}
+
+// function winpostAs($url, $data, winName, width, height, attr)
+// {
+// 	if( !$data )	$data = '';
+// 	if( !winName )	winName = 'newWin';
+// 	if( !attr )	attr = 'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=1,';
+// 	else if( !attr.match(/,$/) )	attr = attr+',';
+// 	if( !width )	width = '600';
+// 	if( !height )	height = '500';
+
+// 	return postAs($url, $data, winName, attr+'width='+width+',height='+height);
+// }
+
+// function postAs($url, $data, winName, features)
+// {
+// 	$('#posttempform').remove();
+// 	$('body').append('<form action="'+$url+'" id="posttempform" method="post"></form>');
+
+// 	var authColor = 'white';
+
+// 	if( $data )
+// 	{
+// 		var $datas = $data.split('&');
+// 		for( var temp=0; temp<$datas.length; temp++ )
+// 		{
+// 			var $d = $datas[temp].split('=');
+// 			$('#posttempform').append('<input type="hidden" name="'+$d[0]+'" value="'+$d[1]+'"/>');
+
+// 			if ($d[0] == 'authcolor')
+// 			{
+// 				authColor = $d[1];
+// 			}
+// 		}
+// 	}
+
+// 	var popwin = null;
+// 	if( winName && String(typeof winName).toLowerCase()=='string' && !String(winName).match(/^(parent|self|opener|top)$/) )
+// 	{
+// 		if( $('#id_'+getWinName(winName)).length )
+// 		{
+// 			$('#id_'+getWinName(winName)).remove();
+// 		}
+// 		var attrs = {};
+// 		if( !!features )
+// 		{
+// 			features = features.split(',');
+// 			for( var temp=0; temp<features.length; temp++ )
+// 			{
+// 				var tempAttr = features[temp].split('=');
+// 				attrs[tempAttr[0]] = tempAttr[1];
+// 			}
+// 		}
+
+// 		$('<div style="display:none; width:'+attrs['width']+'; height:'+attrs['height']+';" class="dialog_popWindow" id="id_'+getWinName(winName)+'" title="'+winName+'"><iframe src="about:blank" frameborder="0" width="100%" height="100%" name="'+winName+'"></iframe></div>').dialog({
+// 			bgiframe:false,autoOpen:true,modal:true,resizable:(attrs['resizable']=='no'?false:true),width:Number(attrs['width'])+15,height:Number(attrs['height'])+70
+// 			,open:function()
+// 			{
+// 				$('body').css('overflow','hidden').attr('scroll','no');
+// 				$(this).css({'padding':'0','overflow':'hidden','background-color':authColor});
+// 				$(this).parent().css({'background-color':authColor,'padding-top':'0','padding-left':'1px','padding-right':'1px','padding-bottom':'1px'});
+// 				$(this).parent().find('.ui-widget-header').css({'background-color':authColor,'border':'solid 1px '+authColor});
+// 				$(this).parent().find('.ui-widget-header').css({'padding':'8px 17px'});
+// 				$(this).parent().find('.ui-widget-header > .ui-dialog-title').css({'color':'white','font-size':'14px','line-height':'16px'});
+// 				$(this).parent().find('.ui-widget-header > .ui-dialog-titlebar-close').css({'margin':'0','top':'7px','right':'7px','position':'absolute','border':'none !important'});
+// 				$(this).parent().find('.ui-widget-header > .ui-dialog-titlebar-close > .ui-icon-closethick').css({'background-image':'url("/image/common/i_close.png")','background-position':'0 0','width':'36px','height':'30px'});
+// 				$(this).parent().find('.ui-widget-header > a.ui-dialog-titlebar-close').removeClass('ui-dialog-titlebar-close ui-corner-all').mouseover(function(){$(this).css('border','none');});
+// 			}
+// 			,close:function()
+// 			{
+// 				try
+// 				{
+// 					if( document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck ) document.getElementsByName(winName)[0].contentWindow.window.postCloseCheck(winName);
+
+// 				}
+// 				catch(err){}
+// 				if( window.postCloseCheck ) window.postCloseCheck(winName);
+// 				$('body').css('overflow','visible').attr('scroll','auto');
+// 			}
+// 			,beforeClose:function(evt, ui)
+// 			{
+// 				try
+// 				{
+// 					if( document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck ) return document.getElementsByName(winName)[0].contentWindow.window.beforeCloseCheck(winName, evt, ui);
+
+// 				}
+// 				catch(err){}
+// 				if( window.beforeCloseCheck ) return window.beforeCloseCheck(winName, evt, ui);
+// 			}
+// 		});	// end of $('#dialog_formset').dialog({
+
+// 		$('#posttempform').attr('target',winName);
+// 	}
+// 	else if( winName && String(winName).match(/^(parent|self|opener|top)$/) )
+// 	{
+// 		$('#posttempform').attr('target',winName);
+// 	}
+// 	$('#posttempform').submit();
+// 	$('#posttempform').remove();
+// 	return popwin;
+// }
+

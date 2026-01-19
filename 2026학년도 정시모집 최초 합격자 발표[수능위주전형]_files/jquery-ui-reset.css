@@ -1,0 +1,102 @@
+@charset "utf-8";
+
+.ui-widget {
+	font-size:1em;
+}
+
+.ui-widget input,.ui-widget select,.ui-widget textarea,.ui-widget button {
+	font-size:1em; line-height:160%;
+}
+
+.ui-selecting {
+	background: silver;
+}
+
+.ui-selected {
+	background: red;
+}
+
+.ui-selectee {
+	background: transparent;
+}
+
+.ui-accordion {
+	width: auto;
+}
+
+.ui-accordion-header {
+	z-index: 1;
+}
+
+.ui-accordion-header a {
+	font-weight:bold;
+}
+
+.ui-buttonset {
+	display: block;
+	width: 100%;
+	margin-right: 0;
+}
+
+.ui-buttonset .ui-button {
+	margin-right: 1px;
+}
+
+.ui-widget-overlay {
+	background: #aaaaaa url(../common/ui-bg_flat_0_aaaaaa_40x100.png) 50% 50% repeat-x; opacity: .70; filter: Alpha(Opacity = 70);
+}
+
+.ui-state-highlight {
+	background-color:#FCEFCE !important; background-image:none;
+}
+
+.ui-state-highlight2 {
+	background-color:#ffff99 !important; background-image:none;
+}
+
+.ui-dialog .ui-dialog-content {
+	position: relative; border: 0; padding:0.1em; background: none; overflow: hidden; zoom: 1;
+}
+
+#infomsg {
+	font-size: 12px; font-family: "돋움"; font-weight: bold; display: block; line-height: 16px;
+}
+
+#confmsg {
+	font-size: 12px; font-family: "돋움"; font-weight: bold; display: block; line-height: 16px;
+}
+
+
+.ui-icon-close { background-position: -81px -128px; }
+.ui-icon-refresh { background-position: -65px -80px; }
+
+.ui-tabs-active { font-weight:bold !important; }
+/**/
+/*.ui-tabs-anchor {*/
+/*	font-size:0.8em;*/
+/*}*/
+/**/
+
+/**
+ * for ckeditor
+ */
+.cke_skin_kama .cke_wrapper {
+	padding-top:3px !important; padding-left:3px !important; padding-right:3px !important; padding-bottom:1px !important;
+}
+table.cke_editor {
+	vertical-align:top !important;
+}
+span.cke_skin_kama { padding:0 !important; }
+
+
+
+
+.ui-dialog.frameless {
+	padding: 0;
+}
+.ui-dialog.frameless .ui-dialog-titlebar {
+	display: none; padding: 0;
+}
+.ui-dialog.frameless .ui-dialog-content {
+	padding: 0; overflow: hidden;
+}

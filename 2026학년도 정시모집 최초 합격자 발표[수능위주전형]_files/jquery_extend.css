@@ -1,0 +1,44 @@
+@charset "utf-8";
+/**
+ * 2012/08/02 10:51:24 김준
+ */
+.selectConUl {
+	margin:-1px 0 0 0; padding:0; position:absolute; z-index:1000; display:inline-block; vertical-align:top; border:solid 1px #ccc; background-color:white;
+}
+.selectConUl li {
+	display:inline; z-index:1000; margin:0; padding:0 15px 0 2px; cursor:pointer; width:100%;
+}
+.selectConUl li.disabled {
+	color:#cccccc; cursor:default;
+}
+
+/**		ui fix		/**/
+
+/*.ui-widget {*/
+/*	font-size:0.83em;*/
+/*}*/
+
+/*.ui-widget input,.ui-widget select,.ui-widget textarea,.ui-widget button {*/
+/*	font-size:1em;*/
+/*}*/
+
+#infomsg {
+	font-size: 12px; font-family: "돋움"; font-weight: bold; display: block; line-height: 16px;
+}
+
+#confmsg {
+	font-size: 12px; font-family: "돋움"; font-weight: bold; display: block; line-height: 16px;
+}
+
+
+.calendar {
+	font-family:verdana !important; font-size:11px !important;
+}
+
+.cke_skin_kama {
+	display:block;
+}
+
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}

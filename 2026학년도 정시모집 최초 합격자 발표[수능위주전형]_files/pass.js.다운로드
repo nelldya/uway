@@ -1,0 +1,136 @@
+$(function()
+{
+	// if( window.DetectedBrowser )
+	// {
+	// 	var USER_BROWSER = DetectedBrowser();
+
+	// 	if( top==self )
+	// 	{
+	// 		if ( USER_BROWSER == GOOGLE_CHROME )
+	// 		{
+	// 			fn_resize();
+	// 		}
+	// 		else
+	// 		{
+	// 			fn_resize();
+	// 			fn_resize();
+	// 		}
+	// 	}
+	// }
+
+
+	$('a.GOFIRST').click(function()
+	{
+		location.href = '/'+jsft_getBinarycd()+'/logout';
+		return false;
+	});
+
+	$('a.CLOSE').click(function()
+	{
+		self.close();
+		return false;
+	});
+
+	$("a.GOPREV").click(function()
+	{
+		$("input[name=page]").val('result');
+		$("form[name=viewhiddenform]").submit();
+		return false;
+	});
+
+
+	// $("#DIV_ZEROPAY_ALERT_BG, #DIV_ZEROPAY_ALERT").outerWidth($("#wrapcontents").innerWidth())
+	// 											.outerHeight($("#wrapcontents").innerHeight());
+
+});
+
+function fn_resize(arg)
+{
+	var winsize = {};
+	winsize.height = $('#wrapcontents').outerHeight();
+	winsize.width = $('#wrapcontents').outerWidth();
+	var fixHeight = winsize.height;
+
+	if( fixHeight>(screen.availHeight-100) )
+	{
+		fixHeight = screen.availHeight-100;
+	}
+
+	// window.moveTo(200,170);
+
+//	if( getRemoteAddr().match(/^(192.168.20)/) )
+//	{
+//		fixHeight = fixHeight + 40;
+//	}
+
+	if( $('#includedFilesInfo').length )
+	{
+		fixHeight += $('#includedFilesInfo').outerHeight();
+	}
+	if( $('#sizeInfo').length )
+	{
+		fixHeight += $('#sizeInfo').outerHeight();
+	}
+
+	if( arg!=undefined )
+	{
+		window.resizeTo(arg,fixHeight);
+	}
+	else
+	{
+		window.resizeTo(winsize.width,fixHeight);
+	}
+}
+
+
+function go_result(applyno)
+{
+	$("input[name='fromselector']").val('selector');
+	$("input[name='APPLYNO']").val(applyno);
+	$("form[name=selectform]").submit();
+	return false;
+}
+function jsft_openApplynoSearch(url,title)
+{
+	url = url || '';
+	if( url )
+	{
+		window.open(url,'jsft_openApplynoSearch');
+	// winopen($url, $data, winName, width, height, attr)
+	}
+	else
+	{
+		winopen
+		(
+			'/search/'+jsft_getBinarycd()+'/applyno',
+			'',
+			title,
+			jsft_getFrameWidth(),
+			'',
+			'toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=0,'
+		);
+	}
+}
+function callkakao()
+{
+	winpost
+	(
+		'/certify/'+jsft_getBinarycd()+'/kakao',
+		'',
+	'☞ 인증번호가 발송되지 않나요?',
+		460,
+		190,
+		"toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=no,resizable=no"
+	);
+			var $tempwin = jQuery('#id_'+getWinName('☞ 인증번호가 발송되지 않나요?')).dialog();
+			// $tempwin.parent().find('.ui-dialog-titlebar').css('background-color','white').css('border','none');
+			$tempwin.parent().find('.ui-widget-header > .ui-dialog-title').css({'color':'black','font-size':'14px','line-height':'16px'});
+			$tempwin.css('background-color','white');
+	
+			// $tempwin.parent().css('background-color',$bgcolor);
+			// $tempwin.parent().find('.ui-widget-header > .ui-dialog-titlebar-close').css({'margin':'0','top':'7px','right':'7px','position':'absolute','border':'none !important'});
+			// $tempwin.parent().find('.ui-widget-header > .ui-dialog-titlebar-close > .ui-icon-closethick').css('background-color',$bgcolor);
+			// $tempwin.parent().find('.ui-icon-closethick').css('background-color',$bgcolor);
+			// $tempwin.parent().find('.ui-widget-header > a.ui-dialog-titlebar-close').removeClass('ui-dialog-titlebar-close ui-corner-all').mouseover(function(){$(this).css('border','none');});
+			// $tempwin.parent().find('.ui-icon-closethick').css({'background-image':'url("../../image/common/i_close.png")','background-position':'0 0','width':'20px','height':'20px'});
+}

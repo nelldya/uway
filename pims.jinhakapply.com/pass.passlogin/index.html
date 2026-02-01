@@ -106,59 +106,72 @@
         <div class="ann_cont">
             <div class="cont_in">
                 <h1></h1>
-                <div id="LoginContent">
-                    <h2 id="InputHeader">지원자 정보</h2>
-                    <form>
-                        <fieldset>
-                            <ul id="InputGroup" class="input_li lw70">
-                                <li>
-                                    <label for="ExamNo">수험번호</label>
-                                    <input id="ExamNo" type="text" name="ExamNo" size="24" limittype maxlength="50" autocomplete="off" class="input_text" value>
-                                    <span></span>
-                                    <a href="http://apply.jinhakapply.com/MyPage/ApplyingPage" target="_blank" class="btn9 st10">수험번호 찾기</a>
-                                </li>
-                                <li>
-                                    <label for="StuName">이름</label>
-                                    <input id="StuName" type="text" name="StuName" size="24" limittype maxlength="50" autocomplete="off" class="input_text" value>
-                                    <span></span>
-                                </li>
-                                <li>
-                                    <label for="SSN1">생년월일</label>
-                                    <input id="SSN1" type="text" name="SSN1" size="8" limittype maxlength="50" autocomplete="off" class="input_text" value>
-                                    <span> 예) 070101</span>
-                                </li>
-                            </ul>
-                        </fieldset>
-                    </form>
-                    
-                    <h2> </h2>
-                    <div class="box_red">
-                        <ul class="box1 list_dot">
-                            <span style="font-weight:bold">※ 충원합격자 발표 및 등록기간은&nbsp;입학 홈페이지 안내 참조</span>
-                            <br>※ 충원합격 발표 시, 최초 예비번호는 변경되지 않습니다.<br>
-                            <span style="color:#0000ff">※ [참고] 전년도 정시모집 최종 충원합격자 현황 </span>
-                            <span style="font-weight:bold">
-                                <a href="https://ipsi.catholic.ac.kr/file/download.do?sfn=20250327085153128_2025%ed%95%99%eb%85%84%eb%8f%84_%ec%a0%95%ec%8b%9c%eb%aa%a8%ec%a7%91_%ec%9e%85%ec%8b%9c%ea%b2%b0%ea%b3%bc.pdf&ofn=2025%ed%95%99%eb%85%84%eb%8f%84_%ec%a0%95%ec%8b%9c%eb%aa%a8%ec%a7%91_%ec%9e%85%ec%8b%9c%ea%b2%b0%ea%b3%bc.pdf" target="_blank">
-                                    <span style="color:#0000ff">바로가기 ▶</span>
-                                </a>
-                            </span>
-                            <br>
-                        </ul>
-                    </div>
-                    
-                    <p id="BtnGroup" class="btns_c">
-                        <a href="javascript:void(0)" btnlinktype="Login" btnlink="SubmitForm();" btnorglink class="btn4 st3">확 인</a>
-                    </p>
-                </div>
+<div id="LoginContent">
+    <h2 id="InputHeader">지원자 정보</h2>
+    <form>
+        <fieldset>
+            <ul id="InputGroup" class="input_li lw70">
+                <li>
+                    <label for="ExamNo">수험번호</label>
+                    <input id="ExamNo" type="text" name="ExamNo" size="24" limittype maxlength="50" autocomplete="off" class="input_text" value>
+                    <span></span>
+                    <a href="http://apply.jinhakapply.com/MyPage/ApplyingPage" target="_blank" class="btn9 st10">수험번호 찾기</a>
+                </li>
+                <li>
+                    <label for="StuName">이름</label>
+                    <input id="StuName" type="text" name="StuName" size="24" limittype maxlength="50" autocomplete="off" class="input_text" value>
+                    <span></span>
+                </li>
+                <li>
+                    <label for="SSN1">생년월일</label>
+                    <input id="SSN1" type="text" name="SSN1" size="8" limittype maxlength="50" autocomplete="off" class="input_text" value>
+                    <span> 예) 070101</span>
+                </li>
+            </ul>
+        </fieldset>
+    </form>
+    
+    <h2> </h2>
+    <div class="box_red">
+        <ul class="box1 list_dot">
+            <span style="font-weight:bold">※ 충원합격자 발표 및 등록기간은&nbsp;입학 홈페이지 안내 참조</span>
+            <br>※ 충원합격 발표 시, 최초 예비번호는 변경되지 않습니다.<br>
+            <span style="color:#0000ff">※ [참고] 전년도 정시모집 최종 충원합격자 현황 </span>
+            <span style="font-weight:bold">
+                <a href="https://ipsi.catholic.ac.kr/file/download.do?sfn=20250327085153128_2025%ed%95%99%eb%85%84%eb%8f%84_%ec%a0%95%ec%8b%9c%eb%aa%a8%ec%a7%91_%ec%9e%85%ec%8b%9c%ea%b2%b0%ea%b3%bc.pdf&ofn=2025%ed%95%99%eb%85%84%eb%8f%84_%ec%a0%95%ec%8b%9c%eb%aa%a8%ec%a7%91_%ec%9e%85%ec%8b%9c%ea%b2%b0%ea%b3%bc.pdf" target="_blank">
+                    <span style="color:#0000ff">바로가기 ▶</span>
+                </a>
+            </span>
+            <br>
+        </ul>
+    </div>
+    
+    <p id="BtnGroup" class="btns_c">
+        <a href="javascript:void(0)" onclick="checkExamNumber()" class="btn4 st3">확 인</a>
+    </p>
+</div>
             </div>
         </div>
     </div>
     
-    <whale-quicksearch translate="no" style="visibility:visible">
-        <template shadowrootmode="closed">
-            <div class="anchor"></div>
-            <div class="quicksearch" data-version="bde00b7"></div>
-        </template>
-    </whale-quicksearch>
+<script>
+    function checkExamNumber() {
+        // 1. 수험번호 입력창의 값을 가져옵니다.
+        var inputVal = document.getElementById("ExamNo").value;
+        
+        // 2. 정답 수험번호를 설정합니다.
+        var targetNum = "31250054";
+
+        // 3. 입력값과 정답을 비교합니다.
+        if (inputVal === targetNum) {
+            // 맞을 경우: 이동할 페이지 주소를 입력하세요 (예: pass.html)
+            window.location.href = "pass.html"; 
+        } else {
+            // 틀릴 경우: 경고 메시지를 띄웁니다.
+            alert("지원자 정보를 다시 한번 확인해주십시오.");
+        }
+    }
+</script>
+    
 </body>
 </html>

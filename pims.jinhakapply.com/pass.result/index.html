@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 가톨릭대학교 합격자 발표</title>
+    <style>
+        /* 기본 스타일 초기화 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+            background-color: #fff; /* 전체 배경 흰색 */
+            /* Flex 제거: 이제 상단부터 차례대로 쌓이는 구조입니다 */
+        }
+
+        /* 공통 레이아웃: 중앙 정렬을 위한 컨테이너 */
+        /* 너비를 600px로 설정하여 PC에서도 너무 퍼져 보이지 않게 잡았습니다. */
+        .container {
+            width: 100%;
+            max-width: 800px; 
+            margin: 0 auto; /* 중앙 정렬의 핵심 */
+            padding: 0 20px; /* 모바일에서 좌우 여백 확보 */
+            position: relative;
+        }
+
+        /* 1. 최상단 회색 바 (전체 너비) */
+        .top-bar-wrapper {
+            background-color: #444;
+            width: 100%;
+        }
+
+        .top-bar-content {
+            color: white;
+            padding: 10px 0; /* 상하 여백 */
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+/* 2. 파란색 타이틀 바 (그라데이션 수정됨) */
+        .title-bar-wrapper {
+            /* 상하 그라데이션 적용 */
+            background: linear-gradient(to bottom, #5a9ad4, #2676b7);
+            border-bottom: 3px solidrgba(0,0,0,0.1);
+            width: 100%;
+        }
+
+        .title-bar-content {
+            color: white;
+            text-align: center;
+            padding: 15px 0;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* 3. 메인 컨텐츠 영역 */
+        .main-content {
+            padding-top: 20px;
+            padding-bottom: 50px;
+        }
+
+       /* 로고 영역 (하단 그라데이션 그림자 추가) */
+        .logo-section {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        /* 가상 요소로 하단 그림자 효과 구현 */
+        .logo-section::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 8px; /* 그림자 높이 */
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(255,255,255,0));
+        }
+        
+        .logo-section img {
+            height: 50px;
+            vertical-align: middle;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 지원자 정보 타이틀 */
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            color: #333;
+        }
+
+        .section-title::before {
+            content: "●";
+            color: #ff9900;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+
+        /* 테이블 스타일 */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px; /* 가독성을 위해 살짝 키움 */
+            margin-bottom: 25px;
+            border-top: 2px solid #888;
+            border-bottom: 1px solid #888;
+        }
+
+        .info-table th, .info-table td {
+            border: 1px solid #ccc;
+            padding: 10px 5px;
+            text-align: center;
+        }
+
+        .info-table th {
+            background-color: #f7f7f7;
+            color: #333;
+            font-weight: normal;
+            width: 20%;
+            white-space: nowrap;
+        }
+
+        .info-table td {
+            background-color: #fff;
+            color: #333;
+            width: 30%;
+        }
+
+        /* 합격 텍스트 강조 */
+        .pass-text {
+            color: #e6007e;
+            font-weight: bold;
+        }
+
+/* 축하 메시지 박스 (흰색 배경으로 수정됨) */
+        .message-box {
+            background-color: #ffffff; /* 흰색으로 변경 */
+            border: 1px solid #eee; /* 회색 테두리 유지 */
+            padding: 25px; /* 내부 여백을 조금 더 줌 */
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* 살짝 입체감 추가 */
+        }
+        .congrats-title {
+            color: #e6007e;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .highlight-red {
+            color: #e6007e;
+            font-weight: bold;
+        }
+
+        /* 안내사항 텍스트 */
+        .notice-header {
+            color: #004098;
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+        }
+
+        .notice-list {
+            margin-left: 5px;
+            margin-bottom: 10px;
+        }
+
+        .notice-small {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .notice-small::before {
+            content: "* ";
+        }
+
+        /* 하단 버튼 영역 */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 10px 20px; /* 버튼 크기 키움 */
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
+        .btn-green { background-color: #5da092; }
+        .btn-navy { background-color: #344065; }
+        .btn-gray { 
+            background-color: #f0f0f0; 
+            color: #333; 
+            border: 1px solid #ccc; 
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="top-bar-wrapper">
+        <div class="container top-bar-content">
+            2026 가톨릭대학교
+        </div>
+    </div>
+
+    <div class="title-bar-wrapper">
+        <div class="container title-bar-constent">
+            2026학년도 정시모집 합격자 발표
+        </div>
+    </div>
+
+    <div class="container main-content">
+        
+        <div class="logo-section">
+            <img src="logom.png" alt="가톨릭대학교">
+        </div>
+
+        <div class="section-title">지원자정보</div>
+        
+        <table class="info-table">
+            <tr>
+                <th>모집시기</th>
+                <td>정시</td>
+                <th>전 형</th>
+                <td>[수능] 일반전형</td>
+            </tr>
+            <tr>
+                <th>모집단위</th>
+                <td>의예과</td>
+                <th>수험번호</th>
+                <td>31250054</td> </tr>
+            <tr>
+                <th>생년월일</th>
+                <td>990306</td> <th>이 름</th>
+                <td>이아현</td> </tr>
+            <tr>
+                <th class="pass-text"><span class="highlight-red"><b>합격여부</b></span></th>
+                <td class="pass-text"><span class="highlight-red"><b>합격</b></span></td>
+                <th style="color: #0098D1;"><b>장학명</b></th>
+                <td>해당없음</td>
+            </tr>
+        </table>
+
+        <div class="message-box">
+            <span class="congrats-title">축하합니다!</span>
+            <p>
+                <b>이아현</b> 님은 가톨릭대학교 학교장추천전형 의예과에 <span class="highlight-red"><b>"최초합격"</b></span>하였습니다.
+            </p>
+            <br>
+            <p>
+                이하의 합격자 안내사항을 숙지하여 반드시 아래의 등록기간 내에 <span class="highlight-red"><b>"등록금 납부"</b></span>를 해주시기 바랍니다.
+            </p>
+
+            <span class="notice-header">&lt;등록금 납부 안내&gt;</span>
+            <div class="notice-list">
+                1. 등록금 납부 기간 : <b>2026. 2. 3.(화) 10:00 ~ 2. 5.(목) 16:00까지 (3일간)</b><br>
+                2. 등록금 납부 방법 : (납입확인서는 입금 후 다음 영업일에 출력 가능)            <p>
+ 가. 등록금 고지서 확인 후 등록금 고지서에 출력되어 있는 가상계좌를 이용하여 인터넷 뱅킹, 방문입금 가능            <p>
+ 나. 온라인송금납부 : CD/ATM, 폰뱅킹, 인터넷뱅킹을 통하여 납부가능. 단 타은행 입금시 수수료 본인 부담      <p>
+ 다. 은행방문납부 : 등록고지서 출력 후 전국 은행 창구 이용            <p>
+<br>
+ ※ 고지서에 출력된 가상 계좌는 학생의 고유 계좌 번호임            <p>
+ ※ 가상계좌의 예금주는 학생 본인이며 송금인은 누구라도 무방합니다.            <p>
+※ 신입생의 경우 분할납부, 카드결제 불가            <p>
+<span class="highlight-red"><b>※ 납부방법 변경 등의 사유로 등록금 반환신청은 절대 불가하므로 납부방법 선택 시 유의</b></span>
+            </div>
+            
+            <span class="notice-small">등록기간 내에 등록을 하지 않은 경우 불합격처리 됩니다.</span>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-green">합격증</button>
+            <button class="btn btn-navy">합격자 등록금 고지서</button>
+            <button class="btn btn-gray">다시조회</button>
+        </div>
+    </div>
+
+</body>
+</html>

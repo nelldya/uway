@@ -14,21 +14,19 @@
 
         body {
             font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-            background-color: #fff; /* 전체 배경 흰색 */
-            /* Flex 제거: 이제 상단부터 차례대로 쌓이는 구조입니다 */
+            background-color: #fff;
         }
 
-        /* 공통 레이아웃: 중앙 정렬을 위한 컨테이너 */
-        /* 너비를 600px로 설정하여 PC에서도 너무 퍼져 보이지 않게 잡았습니다. */
+        /* 공통 레이아웃 */
         .container {
             width: 100%;
             max-width: 800px; 
-            margin: 0 auto; /* 중앙 정렬의 핵심 */
-            padding: 0 20px; /* 모바일에서 좌우 여백 확보 */
+            margin: 0 auto;
+            padding: 0 20px;
             position: relative;
         }
 
-        /* 1. 최상단 회색 바 (전체 너비) */
+        /* 1. 최상단 회색 바 */
         .top-bar-wrapper {
             background-color: #444;
             width: 100%;
@@ -36,14 +34,13 @@
 
         .top-bar-content {
             color: white;
-            padding: 10px 0; /* 상하 여백 */
+            padding: 10px 0;
             font-size: 13px;
             font-weight: bold;
         }
 
-/* 2. 파란색 타이틀 바 (그라데이션 수정됨) */
+        /* 2. 파란색 타이틀 바 */
         .title-bar-wrapper {
-            /* 상하 그라데이션 적용 */
             background: linear-gradient(to bottom, #5a9ad4, #2676b7);
             border-bottom: 3px solid rgba(0,0,0,0.1);
             width: 100%;
@@ -63,7 +60,7 @@
             padding-bottom: 50px;
         }
 
-       /* 로고 영역 (하단 그라데이션 그림자 추가) */
+        /* 로고 영역 */
         .logo-section {
             text-align: center;
             padding: 20px 0;
@@ -71,14 +68,13 @@
             position: relative;
         }
         
-        /* 가상 요소로 하단 그림자 효과 구현 */
         .logo-section::after {
             content: "";
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 8px; /* 그림자 높이 */
+            height: 8px;
             background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(255,255,255,0));
         }
         
@@ -110,7 +106,7 @@
         .info-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 15px; /* 가독성을 위해 살짝 키움 */
+            font-size: 15px;
             margin-bottom: 25px;
             border-top: 2px solid #888;
             border-bottom: 1px solid #888;
@@ -136,22 +132,22 @@
             width: 30%;
         }
 
-        /* 합격 텍스트 강조 */
         .pass-text {
             color: #e6007e;
             font-weight: bold;
         }
 
-/* 축하 메시지 박스 (흰색 배경으로 수정됨) */
+        /* 축하 메시지 박스 */
         .message-box {
-            background-color: #ffffff; /* 흰색으로 변경 */
-            border: 1px solid #eee; /* 회색 테두리 유지 */
-            padding: 25px; /* 내부 여백을 조금 더 줌 */
+            background-color: #ffffff;
+            border: 1px solid #eee;
+            padding: 25px;
             font-size: 15px;
             line-height: 1.6;
             margin-bottom: 30px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* 살짝 입체감 추가 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
+
         .congrats-title {
             color: #e6007e;
             font-weight: bold;
@@ -177,6 +173,11 @@
             margin-left: 5px;
             margin-bottom: 10px;
         }
+        
+        /* <p> 태그 대신 줄간격 조정용 스타일 */
+        .notice-list p {
+            margin: 5px 0 0 10px;
+        }
 
         .notice-small {
             font-size: 13px;
@@ -198,7 +199,7 @@
         }
 
         .btn {
-            padding: 10px 20px; /* 버튼 크기 키움 */
+            padding: 10px 20px;
             font-size: 15px;
             font-weight: bold;
             color: white;
@@ -250,11 +251,14 @@
                 <th>모집단위</th>
                 <td>의예과</td>
                 <th>수험번호</th>
-                <td>31250054</td> </tr>
+                <td>31250054</td>
+            </tr>
             <tr>
                 <th>생년월일</th>
-                <td>990306</td> <th>이 름</th>
-                <td>이아현</td> </tr>
+                <td>990306</td>
+                <th>이 름</th>
+                <td>이아현</td>
+            </tr>
             <tr>
                 <th class="pass-text"><span class="highlight-red"><b>합격여부</b></span></th>
                 <td class="pass-text"><span class="highlight-red"><b>합격</b></span></td>
@@ -276,15 +280,15 @@
             <span class="notice-header">&lt;등록금 납부 안내&gt;</span>
             <div class="notice-list">
                 1. 등록금 납부 기간 : <b>2026. 2. 3.(화) 10:00 ~ 2. 5.(목) 16:00까지 (3일간)</b><br>
-                2. 등록금 납부 방법 : (납입확인서는 입금 후 다음 영업일에 출력 가능)            <p>
- 가. 등록금 고지서 확인 후 등록금 고지서에 출력되어 있는 가상계좌를 이용하여 인터넷 뱅킹, 방문입금 가능            <p>
- 나. 온라인송금납부 : CD/ATM, 폰뱅킹, 인터넷뱅킹을 통하여 납부가능. 단 타은행 입금시 수수료 본인 부담      <p>
- 다. 은행방문납부 : 등록고지서 출력 후 전국 은행 창구 이용            <p>
-<br>
- ※ 고지서에 출력된 가상 계좌는 학생의 고유 계좌 번호임            <p>
- ※ 가상계좌의 예금주는 학생 본인이며 송금인은 누구라도 무방합니다.            <p>
-※ 신입생의 경우 분할납부, 카드결제 불가            <p>
-<span class="highlight-red"><b>※ 납부방법 변경 등의 사유로 등록금 반환신청은 절대 불가하므로 납부방법 선택 시 유의</b></span>
+                2. 등록금 납부 방법 : (납입확인서는 입금 후 다음 영업일에 출력 가능)
+                <p>가. 등록금 고지서 확인 후 등록금 고지서에 출력되어 있는 가상계좌를 이용하여 인터넷 뱅킹, 방문입금 가능</p>
+                <p>나. 온라인송금납부 : CD/ATM, 폰뱅킹, 인터넷뱅킹을 통하여 납부가능. 단 타은행 입금시 수수료 본인 부담</p>
+                <p>다. 은행방문납부 : 등록고지서 출력 후 전국 은행 창구 이용</p>
+                <br>
+                <p>※ 고지서에 출력된 가상 계좌는 학생의 고유 계좌 번호임</p>
+                <p>※ 가상계좌의 예금주는 학생 본인이며 송금인은 누구라도 무방합니다.</p>
+                <p>※ 신입생의 경우 분할납부, 카드결제 불가</p>
+                <p><span class="highlight-red"><b>※ 납부방법 변경 등의 사유로 등록금 반환신청은 절대 불가하므로 납부방법 선택 시 유의</b></span></p>
             </div>
             
             <span class="notice-small">등록기간 내에 등록을 하지 않은 경우 불합격처리 됩니다.</span>
